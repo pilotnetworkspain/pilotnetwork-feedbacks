@@ -1,7 +1,7 @@
 window.PN_SUPABASE_CONFIG = {
   SUPABASE_URL: "https://qmouukexrgmjrphonuhg.supabase.co",
 
-  SUPABASE_ANON_KEY: "sb_publishable_D3ls5okKBKF3svXwp48N8g_ZXeiNJD_",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtb3V1a2V4cmdtanJwaG9udWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MTUxMzMsImV4cCI6MjA5NDE5MTEzM30.OZiLu1ltKgiMdOdlekupHeIjd4Bl0xWDZlf9ro_wD54",
 
   STORAGE_BUCKET: "feedback-files",
 
