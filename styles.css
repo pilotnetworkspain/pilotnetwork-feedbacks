@@ -449,27 +449,39 @@ html, body {
 /* ===== Footer ===== */
 .pn-feedback-footer { margin-top: 60px; padding-top: 22px; border-top: 1px solid var(--pn-line); text-align: center; color: var(--pn-muted); font-size: 12.5px; }
 
-/* ===== MODAL — fixed, sin extender iframe ===== */
+/* ===== MODAL — absolute (compatible con iframe sin scroll propio) ===== */
+/*
+  Por qué absolute y no fixed:
+  El iframe no hace scroll — lo hace el padre (Webador).
+  Con position:fixed la card queda centrada en los 3000px del iframe,
+  no en la zona visible para el usuario. Con position:absolute +
+  margin-top calculado por JS (basado en el scroll del padre via postMessage)
+  la card aparece siempre en la zona visible.
+*/
 .pn-feedback-modal[hidden] { display: none !important; }
 .pn-feedback-modal {
-  position: fixed; inset: 0;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  min-height: 100%;
   z-index: 9999;
-  display: grid; place-items: center;
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 20px 60px;
   animation: pnFadeUp .3s ease both;
-  /* NO overflow: hidden aquí, lo maneja el overlay */
 }
 .pn-feedback-modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(2,4,10,.88);
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(2,4,10,.92);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
 }
 .pn-feedback-modal-card {
   position: relative;
+  z-index: 1;
   max-width: 760px; width: 100%;
-  /* min() limita la altura aunque dvh sea enorme dentro del iframe */
-  max-height: min(700px, calc(100dvh - 40px));
+  max-height: 720px;   /* altura fija, nunca infinita */
   overflow-y: auto;
   padding: 28px;
   border-radius: 22px;
@@ -477,9 +489,9 @@ html, body {
   background: linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)), #08101f;
   box-shadow: var(--pn-shadow);
   animation: pnPop .3s ease both;
-  z-index: 1;
-  /* Scroll interno — el iframe NO crece con el modal */
   overscroll-behavior: contain;
+  /* margin-top lo pone JS según scroll del padre */
+  margin-top: 20px;
 }
 .pn-feedback-modal-close {
   position: absolute; top: 14px; right: 14px;
