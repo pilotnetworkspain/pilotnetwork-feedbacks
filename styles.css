@@ -55,6 +55,20 @@ body > div, body > main, body > section,
   background: var(--pn-bg) !important;
 }
 
+/* ===== FIX WEBADOR EXTENDIDO: Eliminar márgenes/fondos grises ===== */
+/* Cubre contenedores adicionales que Webador puede añadir al iframe */
+div[class*="jw-"], section[class*="jw-"], main[class*="jw-"],
+div[class*="block-"], div[class*="content-"], div[class*="wrapper"],
+div[class*="page-"], div[class*="site-"], div[class*="layout-"] {
+  background: var(--pn-bg) !important;
+  background-image: none !important;
+}
+/* Asegurar que el body/html nunca muestre gris aunque Webador cambie padding/margin */
+html, body {
+  background: var(--pn-bg) !important;
+  min-height: 100% !important;
+}
+
 /* ===== DYNAMIC ISLAND ===== */
 .pn-island-anchor {
   position: sticky;
@@ -454,7 +468,8 @@ body > div, body > main, body > section,
 .pn-feedback-modal-card {
   position: relative;
   max-width: 760px; width: 100%;
-  max-height: calc(100dvh - 40px);
+  /* min() limita la altura aunque dvh sea enorme dentro del iframe */
+  max-height: min(700px, calc(100dvh - 40px));
   overflow-y: auto;
   padding: 28px;
   border-radius: 22px;
