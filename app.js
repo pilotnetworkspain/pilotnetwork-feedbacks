@@ -291,7 +291,7 @@
     $("#pn-detail-logo").alt = company.name;
     $("#pn-detail-logo").onerror = function () { this.onerror = null; this.src = placeholderLogo(company.name); };
     $("#pn-detail-name").textContent = company.name;
-    $("#pn-detail-subtitle").textContent = (company.company_type || CATEGORY_LABEL[company.category] || "") +
+    $("#pn-detail-subtitle").textContent = (company.company_type || getCatLabel(company.category) || "") +
       (company.feedback_count != null ? "  ·  " + company.feedback_count + " feedback" + (company.feedback_count===1?"":"s") : "");
     $("#pn-detail-description").textContent = company.description || "";
 
@@ -463,6 +463,7 @@
 
   function openFeedbackModal(slug) {
     var modal = $("#pn-feedback-modal");
+    modalIsOpen = true; // ← ANTES del reset: bloquea sendHeight durante todo el proceso de apertura
     resetFeedbackForm();
     if (slug) {
       var c = state.companies.find(function (x) { return x.slug === slug; });
@@ -471,7 +472,6 @@
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
-    modalIsOpen = true;
     // Avisa al padre para que haga scroll al iframe y lo muestre
     try {
       window.parent.postMessage({ type: "pn-feedback-modal-open" }, "*");
@@ -877,7 +877,11 @@
     setupDropzone();
     bindEvents();
     // Expone el re-render al sistema i18n del index.html
-    window._pnRerender = function() { applyCompanyFilters(); };
+    window._pnRerender = function() {
+      applyCompanyFilters();      // re-renderiza cards con nuevo idioma
+      fillCompanySelect();        // re-renderiza placeholder del select de compañía
+      if (state.currentCompany) applyFeedbackFilters(); // re-renderiza feedbacks si estamos en el detalle
+    };
     await loadCompanies();
     if (state._pendingSlug) {
       var slug = state._pendingSlug;
