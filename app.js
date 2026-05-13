@@ -78,11 +78,63 @@
     acmi:       "ACMI / Wet Lease",
     generic:    "Genérica"
   };
+  var CATEGORY_LABEL_EN = {
+    commercial: "Commercial",
+    executive:  "Executive",
+    cargo:      "Cargo",
+    low_cost:   "Low cost",
+    regional:   "Regional",
+    acmi:       "ACMI / Wet Lease",
+    generic:    "Generic"
+  };
   var POSITION_LABEL = {
     cadet:         "Cadete",
     first_officer: "First Officer",
     captain:       "Comandante"
   };
+  var POSITION_LABEL_EN = {
+    cadet:         "Cadet",
+    first_officer: "First Officer",
+    captain:       "Captain"
+  };
+
+  // Obtiene etiqueta de categoría según idioma actual
+  function getCatLabel(cat) {
+    var lang = window.pnCurrentLang || 'es';
+    var labels = lang === 'en' ? CATEGORY_LABEL_EN : CATEGORY_LABEL;
+    return labels[cat] || cat;
+  }
+  // Obtiene etiqueta de posición según idioma actual
+  function getPosLabel(pos) {
+    var lang = window.pnCurrentLang || 'es';
+    var labels = lang === 'en' ? POSITION_LABEL_EN : POSITION_LABEL;
+    return labels[pos] || pos;
+  }
+  // Textos de UI dinámicos bilingüe
+  var UI_TEXTS = {
+    'view-feedbacks':    { es: 'Ver feedbacks', en: 'View feedbacks' },
+    'add-feedback':      { es: '+ Añadir',       en: '+ Add' },
+    'feedbacks-count-plural':  { es: 'feedbacks publicados', en: 'feedbacks published' },
+    'feedbacks-count-single':  { es: 'feedback publicado',  en: 'feedback published' },
+    'no-filter-match':   { es: 'No hay feedbacks que coincidan con los filtros.', en: 'No feedbacks match the filters.' },
+    'date-not-set':      { es: 'Fecha no indicada',  en: 'Date not specified' },
+    'aircraft-section':  { es: 'Aviones volados',    en: 'Aircraft flown' },
+    'attachments':       { es: 'Archivos adjuntos',  en: 'Attachments' },
+    'experience':        { es: 'Experiencia',        en: 'Experience' },
+    'feedback-section':  { es: 'Feedback',           en: 'Feedback' },
+    'anonymous':         { es: 'Anónimo',            en: 'Anonymous' },
+    'published-on':      { es: 'Publicado',          en: 'Published' },
+    'total-hours':       { es: 'h totales',          en: 'h total' },
+  };
+  function t(key) {
+    var lang = window.pnCurrentLang || 'es';
+    var entry = UI_TEXTS[key];
+    if (!entry) return key;
+    return entry[lang] || entry['es'];
+  }
+
+  // Flag para pausar sendHeight cuando el modal está abierto
+  var modalIsOpen = false;
 
   function formatDate(dateStr) {
     if (!dateStr) return "";
@@ -157,23 +209,25 @@
 
     var html = state.filteredCompanies.map(function (c, i) {
       var src = logoSrc(c);
+      var fbCount = c.feedback_count || 0;
+      var fbLabel = fbCount === 1 ? t('feedbacks-count-single') : t('feedbacks-count-plural');
       return ''+
         '<article class="pn-feedback-card" tabindex="0" data-slug="'+escapeHtml(c.slug)+'" style="animation-delay:'+(i*0.04).toFixed(2)+'s">'+
-          '<span class="pn-feedback-badge" data-cat="'+escapeHtml(c.category)+'">'+escapeHtml(CATEGORY_LABEL[c.category] || c.category)+'</span>'+
+          '<span class="pn-feedback-badge" data-cat="'+escapeHtml(c.category)+'">'+escapeHtml(getCatLabel(c.category))+'</span>'+
           '<div class="pn-feedback-card-brand">'+
             '<img loading="lazy" src="'+escapeHtml(src)+'" alt="'+escapeHtml(c.name)+'" '+
             'onerror="this.onerror=null;this.src=\''+placeholderLogo(c.name).replace(/'/g, "\\'")+'\'" />'+
             '<div class="pn-feedback-card-brand-text">'+
               '<h3>'+escapeHtml(c.name)+'</h3>'+
-              '<p>'+escapeHtml(c.company_type || CATEGORY_LABEL[c.category] || "")+'</p>'+
+              '<p>'+escapeHtml(c.company_type || getCatLabel(c.category))+'</p>'+
             '</div>'+
           '</div>'+
           '<div class="pn-feedback-card-stat">'+
-            '<strong>'+c.feedback_count+'</strong><span>feedback'+(c.feedback_count===1?"":"s")+' publicado'+(c.feedback_count===1?"":"s")+'</span>'+
+            '<strong>'+fbCount+'</strong><span>'+escapeHtml(fbLabel)+'</span>'+
           '</div>'+
           '<div class="pn-feedback-card-actions">'+
-            '<button class="pn-feedback-btn pn-feedback-btn-primary" data-action="view" data-slug="'+escapeHtml(c.slug)+'">Ver feedbacks</button>'+
-            '<button class="pn-feedback-btn pn-feedback-btn-ghost" data-action="add" data-slug="'+escapeHtml(c.slug)+'">+ Añadir</button>'+
+            '<button class="pn-feedback-btn pn-feedback-btn-primary" data-action="view" data-slug="'+escapeHtml(c.slug)+'">'+escapeHtml(t('view-feedbacks'))+'</button>'+
+            '<button class="pn-feedback-btn pn-feedback-btn-ghost" data-action="add" data-slug="'+escapeHtml(c.slug)+'">'+escapeHtml(t('add-feedback'))+'</button>'+
           '</div>'+
         '</article>';
     }).join("");
@@ -326,7 +380,7 @@
   function renderFeedbacks() {
     var cont = $("#pn-detail-feedbacks-list");
     if (!state.feedbacksFiltered.length) {
-      cont.innerHTML = '<div class="pn-feedback-state"><p>No hay feedbacks que coincidan con los filtros.</p></div>';
+      cont.innerHTML = '<div class="pn-feedback-state"><p>'+escapeHtml(t('no-filter-match'))+'</p></div>';
       sendHeight();
       return;
     }
@@ -335,11 +389,11 @@
         ? formatDate(f.assessment_date)
         : (f.assessment_start_date && f.assessment_end_date
             ? (formatDate(f.assessment_start_date) + " — " + formatDate(f.assessment_end_date))
-            : (f.assessment_start_date ? formatDate(f.assessment_start_date) : "Fecha no indicada"));
+            : (f.assessment_start_date ? formatDate(f.assessment_start_date) : t('date-not-set')));
 
       var aircraftHtml = (f.aircraft_hours && f.aircraft_hours.length)
         ? '<div class="pn-feedback-item-block">'+
-            '<h4>Aviones volados</h4>'+
+            '<h4>'+escapeHtml(t('aircraft-section'))+'</h4>'+
             '<div class="pn-feedback-aircraft-list">'+
               f.aircraft_hours.map(function (a) {
                 return '<div class="pn-feedback-aircraft-chip">'+escapeHtml(a.aircraft_type)+
@@ -352,7 +406,7 @@
 
       var filesHtml = (f.files && f.files.length)
         ? '<div class="pn-feedback-item-block">'+
-            '<h4>Archivos adjuntos</h4>'+
+            '<h4>'+escapeHtml(t('attachments'))+'</h4>'+
             '<ul class="pn-feedback-files-list">'+
               f.files.map(function (file) {
                 var url = supabase.storage.from(file.storage_bucket || "feedback-files").getPublicUrl(file.file_path).data.publicUrl;
@@ -368,19 +422,19 @@
       return '<article class="pn-feedback-item">'+
         '<div class="pn-feedback-item-head">'+
           '<div class="pn-feedback-item-meta">'+
-            '<span class="pn-feedback-pill" data-pos="'+escapeHtml(f.position)+'">'+escapeHtml(POSITION_LABEL[f.position]||f.position)+'</span>'+
-            (f.total_flight_hours != null ? '<span class="pn-feedback-pill">'+f.total_flight_hours+'h totales</span>' : '')+
+            '<span class="pn-feedback-pill" data-pos="'+escapeHtml(f.position)+'">'+escapeHtml(getPosLabel(f.position))+'</span>'+
+            (f.total_flight_hours != null ? '<span class="pn-feedback-pill">'+f.total_flight_hours+' '+escapeHtml(t('total-hours'))+'</span>' : '')+
             '<span class="pn-feedback-pill">'+escapeHtml(dateLabel)+'</span>'+
           '</div>'+
           '<div>'+
-            '<div class="pn-feedback-item-author">'+escapeHtml(f.member_name || "Anónimo")+'</div>'+
-            '<div class="pn-feedback-item-date">Publicado '+formatDate(f.created_at.slice(0,10))+'</div>'+
+            '<div class="pn-feedback-item-author">'+escapeHtml(f.member_name || t('anonymous'))+'</div>'+
+            '<div class="pn-feedback-item-date">'+escapeHtml(t('published-on'))+' '+formatDate(f.created_at.slice(0,10))+'</div>'+
           '</div>'+
         '</div>'+
         (f.flight_experience_summary
-          ? '<div class="pn-feedback-item-block"><h4>Experiencia</h4><div class="pn-feedback-item-body">'+escapeHtml(f.flight_experience_summary)+'</div></div>'
+          ? '<div class="pn-feedback-item-block"><h4>'+escapeHtml(t('experience'))+'</h4><div class="pn-feedback-item-body">'+escapeHtml(f.flight_experience_summary)+'</div></div>'
           : '')+
-        '<div class="pn-feedback-item-block"><h4>Feedback</h4><div class="pn-feedback-item-body">'+escapeHtml(f.feedback_text)+'</div></div>'+
+        '<div class="pn-feedback-item-block"><h4>'+escapeHtml(t('feedback-section'))+'</h4><div class="pn-feedback-item-body">'+escapeHtml(f.feedback_text)+'</div></div>'+
         aircraftHtml+
         filesHtml+
       '</article>';
@@ -395,7 +449,9 @@
     var sel = $("#pn-f-company");
     if (!sel) return;
     var current = sel.value;
-    sel.innerHTML = '<option value="">Selecciona una compañía…</option>';
+    var lang = window.pnCurrentLang || 'es';
+    var ph = lang === 'en' ? 'Select a company…' : 'Selecciona una compañía…';
+    sel.innerHTML = '<option value="">'+escapeHtml(ph)+'</option>';
     state.companies.forEach(function (c) {
       var opt = document.createElement("option");
       opt.value = c.id;
@@ -415,13 +471,19 @@
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
-    sendHeight();
+    modalIsOpen = true;
+    // Avisa al padre para que haga scroll al iframe y lo muestre
+    try {
+      window.parent.postMessage({ type: "pn-feedback-modal-open" }, "*");
+    } catch(e) {}
+    // NO llamamos sendHeight aquí: evita el loop infinito de resize
   }
   function closeFeedbackModal() {
     var modal = $("#pn-feedback-modal");
     modal.hidden = true;
     modal.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
+    modalIsOpen = false;
     sendHeight();
   }
 
@@ -707,6 +769,8 @@
   // ===================================================================
   var lastSentHeight = 0;
   function sendHeight() {
+    // No redimensionar el iframe mientras el modal está abierto — evita el loop infinito
+    if (modalIsOpen) return;
     // Esperamos al próximo frame para que el DOM se haya actualizado
     requestAnimationFrame(function () {
       var h = Math.max(
@@ -812,6 +876,8 @@
   async function init() {
     setupDropzone();
     bindEvents();
+    // Expone el re-render al sistema i18n del index.html
+    window._pnRerender = function() { applyCompanyFilters(); };
     await loadCompanies();
     if (state._pendingSlug) {
       var slug = state._pendingSlug;
