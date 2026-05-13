@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Pilot Network Feedbacks</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f1830;
+      color: #c8d8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { color: #5b9dff; margin-bottom: 24px; font-size: 28px; }
+    
+    .login-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(91,157,255,0.15);
+      border-radius: 10px;
+      padding: 40px;
+      max-width: 400px;
+      margin: 100px auto;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(91,157,255,0.2);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #5b9dff 0%, #3b7de0 100%);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .login-box button:hover { opacity: 0.85; }
+
+    .feedbacks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+    .feedback-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(91,157,255,0.15);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .feedback-card h3 { color: #5b9dff; margin-bottom: 12px; }
+    .feedback-card p { margin-bottom: 8px; font-size: 13px; color: #9da8ba; }
+    .feedback-card .feedback-text {
+      background: rgba(0,0,0,0.2);
+      padding: 12px;
+      border-radius: 6px;
+      margin: 12px 0;
+      font-size: 13px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .feedback-card .btn-delete {
+      background: #f87171;
+      border: none;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+    .feedback-card .btn-delete:hover { opacity: 0.85; }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .status-approved { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .status-pending { background: rgba(250,204,21,0.15); color: #facc15; }
+    .status-rejected { background: rgba(248,113,113,0.15); color: #f87171; }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+    .toolbar button {
+      padding: 10px 20px;
+      background: rgba(91,157,255,0.1);
+      border: 1px solid rgba(91,157,255,0.3);
+      color: #5b9dff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .toolbar button:hover { background: rgba(91,157,255,0.2); }
+    .toolbar input {
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(91,157,255,0.2);
+      border-radius: 6px;
+      color: #fff;
+      flex: 1;
+      max-width: 300px;
+    }
+
+    .count { color: #9da8ba; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div id="login-view" style="display:none;">
+    <div class="login-box">
+      <h2 style="color:#5b9dff; margin-bottom:24px">Admin Panel</h2>
+      <input type="password" id="admin-password" placeholder="Contraseña admin" />
+      <button onclick="doLogin()">Entrar</button>
+      <p style="text-align:center; margin-top:12px; font-size:12px; color:#9da8ba">
+        (Pregunta a Pilot por la contraseña)
+      </p>
+    </div>
+  </div>
+
+  <div id="admin-view" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <div>
+        <h1>Admin Panel</h1>
+        <p class="count">Total: <span id="total-count">0</span> feedbacks</p>
+      </div>
+      <button onclick="doLogout()" style="padding:10px 20px; background:#f87171; color:#fff; border:none; border-radius:6px; cursor:pointer">Salir</button>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="search-input" placeholder="Buscar por nombre, email, compañía…" />
+      <button onclick="filterByStatus('all')">Todos</button>
+      <button onclick="filterByStatus('approved')">Aprobados</button>
+      <button onclick="filterByStatus('pending')">Pendientes</button>
+      <button onclick="filterByStatus('rejected')">Rechazados</button>
+    </div>
+
+    <div id="feedbacks-container" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:20px;"></div>
+  </div>
+</div>
+
+<script src="supabase-config.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var ADMIN_PASSWORD = 'PilotNetwork2024'; // Cambia esto
+  var state = {
+    isLoggedIn: false,
+    allFeedbacks: [],
+    filteredFeedbacks: [],
+    statusFilter: 'all',
+    searchQuery: ''
+  };
+
+  function $(sel) { return document.querySelector(sel); }
+  function $$(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+  function doLogin() {
+    var pwd = $('#admin-password').value;
+    if (pwd === ADMIN_PASSWORD) {
+      state.isLoggedIn = true;
+      $('#login-view').style.display = 'none';
+      $('#admin-view').style.display = '';
+      loadFeedbacks();
+    } else {
+      alert('Contraseña incorrecta');
+    }
+  }
+
+  function doLogout() {
+    state.isLoggedIn = false;
+    $('#login-view').style.display = '';
+    $('#admin-view').style.display = 'none';
+    $('#admin-password').value = '';
+  }
+
+  async function loadFeedbacks() {
+    try {
+      var cfg = window.PN_SUPABASE_CONFIG;
+      var url = cfg.SUPABASE_URL + '/rest/v1/feedbacks?select=*&order=created_at.desc';
+      var resp = await fetch(url, {
+        headers: {
+          'apikey': cfg.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY
+        }
+      });
+      var data = await resp.json();
+      if (resp.ok) {
+        state.allFeedbacks = Array.isArray(data) ? data : [];
+        applyFilters();
+      }
+    } catch (e) {
+      console.error('Error loading feedbacks:', e);
+      alert('Error cargando feedbacks: ' + e.message);
+    }
+  }
+
+  function applyFilters() {
+    var q = ($('#search-input').value || '').toLowerCase();
+    state.filteredFeedbacks = state.allFeedbacks.filter(function(f) {
+      var matchStatus = state.statusFilter === 'all' || f.status === state.statusFilter;
+      if (!matchStatus) return false;
+      if (!q) return true;
+      var hay = (f.member_name + ' ' + (f.member_email || '') + ' ' + (f.feedback_text || '')).toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+    render();
+  }
+
+  function filterByStatus(status) {
+    state.statusFilter = status;
+    applyFilters();
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+      var d = new Date(dateStr);
+      return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch(e) { return dateStr; }
+  }
+
+  function render() {
+    var cont = $('#feedbacks-container');
+    $('#total-count').textContent = state.allFeedbacks.length;
+    
+    if (!state.filteredFeedbacks.length) {
+      cont.innerHTML = '<p style="color:#9da8ba">No hay feedbacks que coincidan.</p>';
+      return;
+    }
+
+    cont.innerHTML = state.filteredFeedbacks.map(function(f) {
+      var statusClass = 'status-' + (f.status || 'pending');
+      return '<div class="feedback-card">'+
+        '<div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px;">'+
+          '<div>'+
+            '<h3>' + escapeHtml(f.member_name || 'Anónimo') + '</h3>'+
+            '<p>' + escapeHtml(f.member_email || '—') + '</p>'+
+          '</div>'+
+          '<span class="status-badge ' + statusClass + '">' + (f.status || 'pending') + '</span>'+
+        '</div>'+
+        '<p><strong>Compañía:</strong> ' + escapeHtml(f.company_id) + '</p>'+
+        '<p><strong>Posición:</strong> ' + escapeHtml(f.position || '—') + '</p>'+
+        '<p><strong>Horas:</strong> ' + (f.total_flight_hours || '—') + '</p>'+
+        '<p><strong>Fecha:</strong> ' + formatDate(f.created_at) + '</p>'+
+        '<div class="feedback-text">' + escapeHtml(f.feedback_text || '') + '</div>'+
+        '<button class="btn-delete" onclick="deleteFeedback(\'' + f.id + '\')">🗑 Eliminar</button>'+
+      '</div>';
+    }).join('');
+  }
+
+  window.deleteFeedback = async function(id) {
+    if (!confirm('¿Eliminar este feedback?')) return;
+    try {
+      var cfg = window.PN_SUPABASE_CONFIG;
+      var url = cfg.SUPABASE_URL + '/rest/v1/feedbacks?id=eq.' + id;
+      var resp = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'apikey': cfg.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY
+        }
+      });
+      if (resp.ok) {
+        state.allFeedbacks = state.allFeedbacks.filter(function(f) { return f.id !== id; });
+        applyFilters();
+      } else {
+        alert('Error eliminando feedback');
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  };
+
+  $('#search-input').addEventListener('input', applyFilters);
+
+  // Mostrar login
+  $('#login-view').style.display = '';
+  $('#admin-view').style.display = 'none';
+})();
+</script>
+</body>
+</html>
