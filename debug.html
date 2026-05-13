@@ -154,7 +154,7 @@
 <body>
 
 <h1>🛠 Pilot Network · Debug de Conexión</h1>
-<p class="subtitle">Diagnóstico automático de supabase-config.js y API key · Proyecto: qmouukexrgmjrphonuhg</p>
+<p class="subtitle">Diagnóstico automático de supabase-config.js y API key · Proyecto: jnaldsbrbauydbetzpqn</p>
 
 <!-- SECCIÓN 1: CONFIG -->
 <div class="section">
@@ -187,7 +187,7 @@
   <div class="section-title">⑤ Test rápido para la Consola del navegador</div>
   <p style="color:#5b7aaa; font-size:13px; margin-bottom:8px;">Abre las DevTools (F12 → Consola) y pega este código. Reemplaza <code style="color:#93c5fd">TU_KEY</code> por tu anon key real si quieres probar manualmente.</p>
   <div class="console-box">
-    <p><code>fetch("https://qmouukexrgmjrphonuhg.supabase.co/rest/v1/companies_public?select=*&limit=3", {</code></p>
+    <p><code>fetch("https://jnaldsbrbauydbetzpqn.supabase.co/rest/v1/companies_public?select=*&limit=3", {</code></p>
     <p><code>&nbsp;&nbsp;headers: {</code></p>
     <p><code>&nbsp;&nbsp;&nbsp;&nbsp;apikey: window.PN_SUPABASE_CONFIG?.SUPABASE_ANON_KEY || "TU_KEY",</code></p>
     <p><code>&nbsp;&nbsp;&nbsp;&nbsp;Authorization: "Bearer " + (window.PN_SUPABASE_CONFIG?.SUPABASE_ANON_KEY || "TU_KEY")</code></p>
@@ -207,7 +207,7 @@
 (function() {
   'use strict';
 
-  var SUPABASE_URL_EXPECTED = "https://qmouukexrgmjrphonuhg.supabase.co";
+  var SUPABASE_URL_EXPECTED = "https://jnaldsbrbauydbetzpqn.supabase.co";
   var TABLE = "companies_public";
   var REST_URL = SUPABASE_URL_EXPECTED + "/rest/v1/" + TABLE + "?select=*&limit=3";
 
@@ -268,7 +268,7 @@
     diagData.urlOk = urlOk;
     rows += row('SUPABASE_URL', (urlOk ? badge('ok','OK') : badge('err','ERROR')) + '  <span style="color:#a0b8d8">' + (url || '(vacía)') + '</span>');
     if (!urlOk) {
-      rows += row('', '<span class="err">⚠ La URL no coincide con el proyecto qmouukexrgmjrphonuhg. ¿Pegaste la URL correcta?</span>');
+      rows += row('', '<span class="err">⚠ La URL no coincide con el proyecto jnaldsbrbauydbetzpqn. ¿Pegaste la URL correcta?</span>');
     }
 
     // KEY
@@ -299,7 +299,7 @@
       var parts = keyType.split(':');
       var role = parts[1]; var ref = parts[2];
       var roleOk = role === 'anon';
-      var refOk  = ref  === 'qmouukexrgmjrphonuhg';
+      var refOk  = ref  === 'jnaldsbrbauydbetzpqn';
       diagData.keyOk = roleOk && refOk;
       keyBadge = badge(diagData.keyOk ? 'ok' : 'err', 'JWT');
       keyNote = 'role: <strong class="' + (roleOk?'ok':'err') + '">' + role + '</strong>  ·  ref del proyecto: <strong class="' + (refOk?'ok':'err') + '">' + ref + '</strong>';
@@ -447,11 +447,11 @@
       html += '</ol>';
     } else if (!d.urlOk) {
       html += '<p class="err" style="margin-bottom:8px">🔴 <strong>SUPABASE_URL incorrecta.</strong></p>';
-      html += '<p style="color:#c8d8f0; font-size:13px">La URL en supabase-config.js no corresponde al proyecto <code style="color:#93c5fd">qmouukexrgmjrphonuhg</code>.<br>Debe ser exactamente: <code style="color:#93c5fd">https://qmouukexrgmjrphonuhg.supabase.co</code></p>';
+      html += '<p style="color:#c8d8f0; font-size:13px">La URL en supabase-config.js no corresponde al proyecto <code style="color:#93c5fd">jnaldsbrbauydbetzpqn</code>.<br>Debe ser exactamente: <code style="color:#93c5fd">https://jnaldsbrbauydbetzpqn.supabase.co</code></p>';
     } else if (!d.keyOk || (d.fetchError && d.fetchError.toLowerCase && d.fetchError.toLowerCase().includes('invalid'))) {
       html += '<p class="err" style="margin-bottom:8px">🔴 <strong>INVALID API KEY — causa más probable.</strong></p>';
       html += '<ol style="padding-left:20px; color:#c8d8f0; line-height:2; font-size:13px">';
-      html += '<li>Ve a <a href="https://supabase.com/dashboard/project/qmouukexrgmjrphonuhg/settings/api" target="_blank" style="color:#5b9dff">Supabase Dashboard → Settings → API</a></li>';
+      html += '<li>Ve a <a href="https://supabase.com/dashboard/project/jnaldsbrbauydbetzpqn/settings/api" target="_blank" style="color:#5b9dff">Supabase Dashboard → Settings → API</a></li>';
       html += '<li>Busca la sección <strong>"Project API keys"</strong></li>';
       html += '<li>Localiza <strong>"anon public"</strong> (NO la service_role)</li>';
       html += '<li>Haz clic en el botón <strong>Copy</strong> (no selecciones el texto manualmente — puede quedar truncado)</li>';
