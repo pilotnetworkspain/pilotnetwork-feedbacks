@@ -667,7 +667,19 @@
     return errors;
   }
 
-  function sanitizeFilename(name) {
+  // Genera un UUID v4 en el cliente para no necesitar SELECT tras el INSERT.
+  // (Supabase comprueba la política SELECT al hacer INSERT...RETURNING,
+  //  pero los feedbacks recién insertados son 'pending' y la política anon
+  //  solo permite ver 'approved' → falla. Con UUID propio evitamos el problema.)
+  function generateUUID() {
+    if (crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0;
+      return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+
+
     // Quitamos caracteres raros y mantenemos extensión
     var clean = name.replace(/[^\w.\-]+/g, "_").replace(/_+/g, "_");
     return clean.length > 80 ? clean.slice(-80) : clean;
@@ -693,14 +705,15 @@
     spin.hidden = false;
 
     try {
-      // 1) Insert feedback (status forzado a pending por trigger)
+      // 1) Insert feedback — UUID generado en cliente para evitar
+      //    el SELECT implícito que hace RETURNING y bloquea RLS (pending ≠ approved)
+      var feedbackId = generateUUID();
+      collected.feedback.id = feedbackId;
+
       var insertFb = await supabase
         .from("feedbacks")
-        .insert([collected.feedback])
-        .select("id")
-        .single();
+        .insert([collected.feedback]);
       if (insertFb.error) throw insertFb.error;
-      var feedbackId = insertFb.data.id;
 
       // 2) Insert aircraft_hours
       if (collected.aircraft.length) {
