@@ -399,6 +399,7 @@
 
   function pnSetLang(lang) {
     pnCurrentLang = lang;
+    window.pnCurrentLang = lang; // compartido con app.js
     var c = PN_COPY[lang];
 
     // Isla: botones activos
@@ -454,6 +455,9 @@
       var key = el.getAttribute('data-i18n');
       if (c[key] !== undefined) el.innerHTML = c[key];
     });
+
+    // Re-renderizar las cards de compañías con el nuevo idioma
+    if (typeof window._pnRerender === 'function') window._pnRerender();
   }
   </script>
 </body>
