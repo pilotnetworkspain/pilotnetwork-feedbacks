@@ -9,76 +9,98 @@
 </head>
 <body class="pn-feedback-root">
 
+  <!-- ============ DYNAMIC ISLAND (idioma) ============ -->
+  <div class="pn-island-anchor">
+    <div class="pn-island" role="tablist" aria-label="Language selector">
+      <button class="pn-flag-btn active" id="pn-btn-es" onclick="pnSetLang('es')" aria-label="Español">
+        <span class="pn-flag" aria-hidden="true">
+          <svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid slice">
+            <rect width="60" height="40" fill="#AA151B"/>
+            <rect y="10" width="60" height="20" fill="#F1BF00"/>
+          </svg>
+        </span>
+        <span class="pn-island-label">ESPAÑOL</span>
+      </button>
+      <button class="pn-flag-btn" id="pn-btn-en" onclick="pnSetLang('en')" aria-label="English">
+        <span class="pn-flag" aria-hidden="true">
+          <svg viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice">
+            <clipPath id="ukclip"><rect width="60" height="30"/></clipPath>
+            <g clip-path="url(#ukclip)">
+              <rect width="60" height="30" fill="#012169"/>
+              <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+              <path d="M0,0 L60,30" stroke="#C8102E" stroke-width="2.5" transform="translate(1.5,-.8)"/>
+              <path d="M60,0 L0,30" stroke="#C8102E" stroke-width="2.5" transform="translate(-1.5,-.8)"/>
+              <rect x="25" width="10" height="30" fill="#fff"/>
+              <rect y="10" width="60" height="10" fill="#fff"/>
+              <rect x="27" width="6" height="30" fill="#C8102E"/>
+              <rect y="12" width="60" height="6" fill="#C8102E"/>
+            </g>
+          </svg>
+        </span>
+        <span class="pn-island-label">ENGLISH</span>
+      </button>
+    </div>
+  </div>
+
   <section class="pn-feedback-section">
     <div class="pn-feedback-inner">
 
       <!-- ============ HERO ============ -->
       <header class="pn-feedback-hero" id="pn-view-list-hero">
-        <span class="pn-feedback-kicker">Pilot Network · Assessment Feedbacks</span>
+        <span class="pn-feedback-kicker" id="pn-lang-kicker">Pilot Network · Assessment Feedbacks</span>
         <h1 class="pn-feedback-title">
-          <span>Feedbacks de assessments</span><br />
-          <span>de aerolíneas y compañías</span>
+          <span id="pn-lang-title-1">Feedbacks de assessments</span><br />
+          <span id="pn-lang-title-2">de aerolíneas y compañías</span>
         </h1>
-        <p class="pn-feedback-subtitle">
+        <p class="pn-feedback-subtitle" id="pn-lang-subtitle">
           Comparte tu experiencia en procesos de selección de pilotos y aprende de la de otros miembros.
           Selecciona una compañía para leer feedbacks reales o publica el tuyo.
         </p>
       </header>
 
-      <!-- ============ TOOLBAR (búsqueda + filtros) ============ -->
+      <!-- ============ TOOLBAR ============ -->
       <div class="pn-feedback-toolbar" id="pn-view-list-toolbar">
         <div class="pn-feedback-search">
           <svg class="pn-feedback-search-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M11 19a8 8 0 1 1 5.293-13.95A8 8 0 0 1 11 19Zm10 2-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
-          <input
-            id="pn-search-input"
-            type="search"
-            placeholder="Buscar compañía…"
-            aria-label="Buscar compañía"
-            autocomplete="off"
-          />
+          <input id="pn-search-input" type="search" placeholder="Buscar compañía…" aria-label="Buscar compañía" autocomplete="off" />
         </div>
-
         <div class="pn-feedback-filters" role="tablist" aria-label="Filtrar por categoría">
-          <button class="pn-feedback-filter is-active" data-filter="all">Todas</button>
-          <button class="pn-feedback-filter" data-filter="commercial">Comercial</button>
-          <button class="pn-feedback-filter" data-filter="executive">Ejecutiva</button>
-          <button class="pn-feedback-filter" data-filter="cargo">Cargo</button>
-          <button class="pn-feedback-filter" data-filter="low_cost">Low cost</button>
-          <button class="pn-feedback-filter" data-filter="regional">Regional</button>
-          <button class="pn-feedback-filter" data-filter="acmi">ACMI / Wet Lease</button>
-          <button class="pn-feedback-filter" data-filter="generic">Genérica</button>
+          <button class="pn-feedback-filter is-active" data-filter="all"       id="pnf-all">Todas</button>
+          <button class="pn-feedback-filter" data-filter="commercial"          id="pnf-commercial">Comercial</button>
+          <button class="pn-feedback-filter" data-filter="executive"           id="pnf-executive">Ejecutiva</button>
+          <button class="pn-feedback-filter" data-filter="cargo"               id="pnf-cargo">Cargo</button>
+          <button class="pn-feedback-filter" data-filter="low_cost"            id="pnf-low_cost">Low cost</button>
+          <button class="pn-feedback-filter" data-filter="regional"            id="pnf-regional">Regional</button>
+          <button class="pn-feedback-filter" data-filter="acmi"                id="pnf-acmi">ACMI / Wet Lease</button>
+          <button class="pn-feedback-filter" data-filter="generic"             id="pnf-generic">Genérica</button>
         </div>
       </div>
 
       <!-- ============ ESTADOS ============ -->
       <div class="pn-feedback-state" id="pn-state-loading" hidden>
         <div class="pn-feedback-spinner" aria-hidden="true"></div>
-        <p>Cargando compañías…</p>
+        <p id="pn-lang-loading">Cargando compañías…</p>
       </div>
-
       <div class="pn-feedback-state pn-feedback-state-error" id="pn-state-error" hidden>
         <p id="pn-state-error-message">No se pudo cargar la información.</p>
       </div>
-
       <div class="pn-feedback-state" id="pn-state-empty" hidden>
-        <p>No se encontraron compañías con esos filtros.</p>
+        <p id="pn-lang-empty">No se encontraron compañías con esos filtros.</p>
       </div>
 
-      <!-- ============ VISTA: GRID DE COMPAÑÍAS ============ -->
+      <!-- ============ GRID DE COMPAÑÍAS ============ -->
       <main class="pn-feedback-grid" id="pn-companies-grid" aria-live="polite"></main>
 
-      <!-- ============ VISTA: DETALLE DE COMPAÑÍA ============ -->
+      <!-- ============ DETALLE DE COMPAÑÍA ============ -->
       <main class="pn-feedback-detail" id="pn-company-detail" hidden>
-
         <button class="pn-feedback-back" id="pn-back-button" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
             <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
-          Volver a compañías
+          <span id="pn-lang-back">Volver a compañías</span>
         </button>
-
         <header class="pn-feedback-detail-header">
           <div class="pn-feedback-detail-brand">
             <img id="pn-detail-logo" alt="" />
@@ -88,214 +110,351 @@
             </div>
           </div>
           <button class="pn-feedback-btn pn-feedback-btn-primary" id="pn-detail-add-feedback" type="button">
-            <span>+ Publicar feedback</span>
+            <span id="pn-lang-add-feedback">+ Publicar feedback</span>
           </button>
         </header>
-
         <p id="pn-detail-description" class="pn-feedback-detail-description"></p>
-
         <div class="pn-feedback-detail-filters">
-          <div class="pn-feedback-mini-filters" role="tablist" aria-label="Filtrar por posición">
-            <button class="pn-feedback-mini-filter is-active" data-pos="all">Todas las posiciones</button>
-            <button class="pn-feedback-mini-filter" data-pos="cadet">Cadete</button>
-            <button class="pn-feedback-mini-filter" data-pos="first_officer">First Officer</button>
-            <button class="pn-feedback-mini-filter" data-pos="captain">Comandante</button>
+          <div class="pn-feedback-mini-filters" role="tablist">
+            <button class="pn-feedback-mini-filter is-active" data-pos="all"          id="pnpos-all">Todas las posiciones</button>
+            <button class="pn-feedback-mini-filter" data-pos="cadet"                  id="pnpos-cadet">Cadete</button>
+            <button class="pn-feedback-mini-filter" data-pos="first_officer"          id="pnpos-fo">First Officer</button>
+            <button class="pn-feedback-mini-filter" data-pos="captain"               id="pnpos-captain">Comandante</button>
           </div>
           <div class="pn-feedback-date-filter">
-            <label for="pn-date-from">Desde</label>
+            <label for="pn-date-from" id="pn-lang-from">Desde</label>
             <input type="date" id="pn-date-from" />
-            <label for="pn-date-to">Hasta</label>
+            <label for="pn-date-to" id="pn-lang-to">Hasta</label>
             <input type="date" id="pn-date-to" />
-            <button class="pn-feedback-mini-filter" id="pn-date-clear" type="button">Limpiar</button>
+            <button class="pn-feedback-mini-filter" id="pn-date-clear" type="button" id="pn-lang-clear">Limpiar</button>
           </div>
         </div>
-
         <div class="pn-feedback-state" id="pn-detail-loading" hidden>
           <div class="pn-feedback-spinner" aria-hidden="true"></div>
-          <p>Cargando feedbacks…</p>
+          <p id="pn-lang-loading-fb">Cargando feedbacks…</p>
         </div>
-
         <div class="pn-feedback-state" id="pn-detail-empty" hidden>
-          <p>Aún no hay feedbacks aprobados para esta compañía.</p>
-          <p class="pn-feedback-muted">¿Has hecho un assessment aquí? Sé el primero en compartir tu experiencia.</p>
+          <p id="pn-lang-no-fb">Aún no hay feedbacks aprobados para esta compañía.</p>
+          <p class="pn-feedback-muted" id="pn-lang-no-fb-sub">¿Has hecho un assessment aquí? Sé el primero en compartir tu experiencia.</p>
         </div>
-
         <div id="pn-detail-feedbacks-list" class="pn-feedback-list"></div>
       </main>
 
       <!-- ============ FOOTER ============ -->
       <footer class="pn-feedback-footer">
-        <p>
-          Los feedbacks son revisados antes de su publicación.
-          No publiques documentos confidenciales ni datos personales de terceros.
-        </p>
+        <p id="pn-lang-footer">Los feedbacks son revisados antes de su publicación. No publiques documentos confidenciales ni datos personales de terceros.</p>
       </footer>
 
     </div>
   </section>
 
-  <!-- ====================================================== -->
-  <!-- ============ MODAL: NUEVO FEEDBACK =================== -->
-  <!-- ====================================================== -->
+  <!-- ============ MODAL: NUEVO FEEDBACK ============ -->
   <div class="pn-feedback-modal" id="pn-feedback-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="pn-modal-title">
     <div class="pn-feedback-modal-overlay" data-close-modal="1"></div>
-
     <div class="pn-feedback-modal-card" role="document">
       <button class="pn-feedback-modal-close" type="button" data-close-modal="1" aria-label="Cerrar">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
-
       <header class="pn-feedback-modal-header">
-        <h2 id="pn-modal-title">Publicar nuevo feedback</h2>
-        <p>Comparte cómo fue el proceso. Tu feedback se revisa antes de publicarse.</p>
+        <h2 id="pn-modal-title" data-i18n="modal-title">Publicar nuevo feedback</h2>
+        <p data-i18n="modal-sub">Comparte cómo fue el proceso. Tu feedback se revisa antes de publicarse.</p>
       </header>
-
       <form id="pn-feedback-form" class="pn-feedback-form" novalidate>
-
-        <!-- Compañía -->
         <div class="pn-feedback-field">
-          <label for="pn-f-company">Compañía *</label>
+          <label for="pn-f-company" data-i18n="f-company">Compañía *</label>
           <select id="pn-f-company" name="company_id" required>
-            <option value="">Selecciona una compañía…</option>
+            <option value="" data-i18n="f-company-ph">Selecciona una compañía…</option>
           </select>
         </div>
-
-        <!-- Datos personales -->
         <div class="pn-feedback-row">
           <div class="pn-feedback-field">
-            <label for="pn-f-name">Nombre o nickname *</label>
+            <label for="pn-f-name" data-i18n="f-name">Nombre o nickname *</label>
             <input id="pn-f-name" name="member_name" type="text" maxlength="80" required placeholder="Ej. JuanP737" />
           </div>
           <div class="pn-feedback-field">
-            <label for="pn-f-email">Email <span class="pn-feedback-hint">(opcional, no público)</span></label>
+            <label for="pn-f-email" data-i18n="f-email">Email <span class="pn-feedback-hint" data-i18n="f-email-hint">(opcional, no público)</span></label>
             <input id="pn-f-email" name="member_email" type="email" maxlength="120" placeholder="solo para contacto interno" />
           </div>
         </div>
-
-        <!-- Fechas -->
         <div class="pn-feedback-row">
           <div class="pn-feedback-field">
-            <label for="pn-f-date">Fecha del assessment</label>
+            <label for="pn-f-date" data-i18n="f-date">Fecha del assessment</label>
             <input id="pn-f-date" name="assessment_date" type="date" />
-            <small class="pn-feedback-hint">Si fue un único día.</small>
+            <small class="pn-feedback-hint" data-i18n="f-date-hint">Si fue un único día.</small>
           </div>
           <div class="pn-feedback-field">
-            <label for="pn-f-date-start">Fecha inicio</label>
+            <label for="pn-f-date-start" data-i18n="f-date-start">Fecha inicio</label>
             <input id="pn-f-date-start" name="assessment_start_date" type="date" />
-            <small class="pn-feedback-hint">Si fueron varios días.</small>
+            <small class="pn-feedback-hint" data-i18n="f-date-start-hint">Si fueron varios días.</small>
           </div>
           <div class="pn-feedback-field">
-            <label for="pn-f-date-end">Fecha fin</label>
+            <label for="pn-f-date-end" data-i18n="f-date-end">Fecha fin</label>
             <input id="pn-f-date-end" name="assessment_end_date" type="date" />
           </div>
         </div>
-
-        <!-- Posición -->
         <div class="pn-feedback-row">
           <div class="pn-feedback-field">
-            <label for="pn-f-position">Posición *</label>
+            <label for="pn-f-position" data-i18n="f-position">Posición *</label>
             <select id="pn-f-position" name="position" required>
-              <option value="">Selecciona…</option>
-              <option value="cadet">Cadete</option>
-              <option value="first_officer">First Officer</option>
-              <option value="captain">Comandante</option>
+              <option value="" data-i18n="f-position-ph">Selecciona…</option>
+              <option value="cadet"         data-i18n="pos-cadet">Cadete</option>
+              <option value="first_officer" data-i18n="pos-fo">First Officer</option>
+              <option value="captain"       data-i18n="pos-captain">Comandante</option>
             </select>
           </div>
           <div class="pn-feedback-field">
-            <label for="pn-f-hours">Horas totales de vuelo</label>
+            <label for="pn-f-hours" data-i18n="f-hours">Horas totales de vuelo</label>
             <input id="pn-f-hours" name="total_flight_hours" type="number" min="0" max="50000" step="1" placeholder="Ej. 1500" />
           </div>
         </div>
-
-        <!-- Resumen experiencia -->
         <div class="pn-feedback-field">
-          <label for="pn-f-experience">Experiencia de vuelo (resumen)</label>
-          <textarea id="pn-f-experience" name="flight_experience_summary" rows="3" maxlength="2000"
-            placeholder="Ej. 4 años en regional A320, último año en CS300, OPC reciente, etc."></textarea>
+          <label for="pn-f-experience" data-i18n="f-experience">Experiencia de vuelo (resumen)</label>
+          <textarea id="pn-f-experience" name="flight_experience_summary" rows="3" maxlength="2000" placeholder="Ej. 4 años en regional A320…"></textarea>
         </div>
-
-        <!-- Bloques aviones -->
         <div class="pn-feedback-field">
-          <label>Aviones volados</label>
-          <small class="pn-feedback-hint">Añade un bloque por cada tipo de avión.</small>
+          <label data-i18n="f-aircraft">Aviones volados</label>
+          <small class="pn-feedback-hint" data-i18n="f-aircraft-hint">Añade un bloque por cada tipo de avión.</small>
           <div id="pn-aircraft-blocks" class="pn-feedback-aircraft-blocks"></div>
-          <button type="button" class="pn-feedback-btn pn-feedback-btn-ghost" id="pn-add-aircraft">
-            + Añadir avión
-          </button>
+          <button type="button" class="pn-feedback-btn pn-feedback-btn-ghost" id="pn-add-aircraft" data-i18n="f-add-aircraft">+ Añadir avión</button>
         </div>
-
-        <!-- Feedback texto largo -->
         <div class="pn-feedback-field">
-          <label for="pn-f-text">Texto del feedback *</label>
-          <small class="pn-feedback-hint">
-            Cómo fue el proceso, fases, entrevista técnica, simulador, HR interview, group exercise,
-            psychometric tests, consejos para otros pilotos…
-          </small>
-          <textarea id="pn-f-text" name="feedback_text" rows="10" minlength="80" maxlength="15000" required
-            placeholder="Describe el proceso con todo el detalle que puedas…"></textarea>
+          <label for="pn-f-text" data-i18n="f-text">Texto del feedback *</label>
+          <small class="pn-feedback-hint" data-i18n="f-text-hint">Cómo fue el proceso, fases, entrevista técnica, simulador, HR interview, psychometric tests, consejos…</small>
+          <textarea id="pn-f-text" name="feedback_text" rows="10" minlength="80" maxlength="15000" required placeholder="Describe el proceso con todo el detalle que puedas…"></textarea>
           <div class="pn-feedback-counter"><span id="pn-f-text-count">0</span> / 15000</div>
         </div>
-
-        <!-- Archivos -->
         <div class="pn-feedback-field">
-          <label>Archivos adjuntos <span class="pn-feedback-hint">(opcional, máx 5 archivos · 10 MB c/u)</span></label>
+          <label data-i18n="f-files">Archivos adjuntos <span class="pn-feedback-hint" data-i18n="f-files-hint">(opcional, máx 5 · 10 MB c/u)</span></label>
           <div class="pn-feedback-dropzone" id="pn-dropzone">
-            <input type="file" id="pn-f-files" multiple
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" />
+            <input type="file" id="pn-f-files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" />
             <div class="pn-feedback-dropzone-text">
-              <strong>Arrastra archivos aquí</strong> o haz clic para seleccionar
+              <strong data-i18n="f-drop-strong">Arrastra archivos aquí</strong> <span data-i18n="f-drop-or">o haz clic para seleccionar</span>
               <p class="pn-feedback-hint">PDF, Word, Excel, CSV</p>
             </div>
           </div>
           <ul id="pn-files-preview" class="pn-feedback-files-preview"></ul>
         </div>
-
-        <!-- Legal -->
         <div class="pn-feedback-legal">
           <label class="pn-feedback-checkbox">
             <input type="checkbox" id="pn-f-legal" required />
-            <span>
-              Confirmo que <strong>no estoy subiendo documentación confidencial</strong> de la compañía
-              ni datos personales de terceros. Entiendo que mi feedback será revisado antes de publicarse.
-            </span>
+            <span data-i18n="f-legal">Confirmo que <strong>no estoy subiendo documentación confidencial</strong> de la compañía ni datos personales de terceros. Entiendo que mi feedback será revisado antes de publicarse.</span>
           </label>
         </div>
-
-        <!-- Mensajes -->
         <div class="pn-feedback-form-status" id="pn-form-status" hidden></div>
-
-        <!-- Botones -->
         <div class="pn-feedback-form-actions">
-          <button type="button" class="pn-feedback-btn pn-feedback-btn-ghost" data-close-modal="1">Cancelar</button>
+          <button type="button" class="pn-feedback-btn pn-feedback-btn-ghost" data-close-modal="1" data-i18n="f-cancel">Cancelar</button>
           <button type="submit" class="pn-feedback-btn pn-feedback-btn-primary" id="pn-submit-btn">
-            <span class="pn-feedback-btn-label">Enviar feedback</span>
+            <span class="pn-feedback-btn-label" data-i18n="f-submit">Enviar feedback</span>
             <span class="pn-feedback-btn-spinner" aria-hidden="true" hidden></span>
           </button>
         </div>
       </form>
-
-      <!-- Pantalla de éxito -->
       <div class="pn-feedback-success" id="pn-form-success" hidden>
         <div class="pn-feedback-success-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="48" height="48">
             <path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
         </div>
-        <h3>¡Feedback enviado!</h3>
-        <p>Gracias por compartir tu experiencia. Tu feedback está pendiente de revisión y aparecerá publicado cuando sea aprobado.</p>
-        <button type="button" class="pn-feedback-btn pn-feedback-btn-primary" data-close-modal="1">Cerrar</button>
+        <h3 data-i18n="success-title">¡Feedback enviado!</h3>
+        <p data-i18n="success-body">Gracias por compartir tu experiencia. Tu feedback está pendiente de revisión y aparecerá publicado cuando sea aprobado.</p>
+        <button type="button" class="pn-feedback-btn pn-feedback-btn-primary" data-close-modal="1" data-i18n="success-close">Cerrar</button>
       </div>
-
     </div>
   </div>
 
-  <!-- Supabase JS desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Tu config (renombrar supabase-config.example.js -> supabase-config.js) -->
   <script src="supabase-config.js"></script>
-  <!-- App -->
   <script src="app.js"></script>
+
+  <!-- i18n inline -->
+  <script>
+  var PN_COPY = {
+    es: {
+      'kicker':          'Pilot Network · Assessment Feedbacks',
+      'title-1':         'Feedbacks de assessments',
+      'title-2':         'de aerolíneas y compañías',
+      'subtitle':        'Comparte tu experiencia en procesos de selección de pilotos y aprende de la de otros miembros. Selecciona una compañía para leer feedbacks reales o publica el tuyo.',
+      'loading':         'Cargando compañías…',
+      'empty':           'No se encontraron compañías con esos filtros.',
+      'back':            'Volver a compañías',
+      'add-feedback':    '+ Publicar feedback',
+      'from':            'Desde',
+      'to':              'Hasta',
+      'clear':           'Limpiar',
+      'loading-fb':      'Cargando feedbacks…',
+      'no-fb':           'Aún no hay feedbacks aprobados para esta compañía.',
+      'no-fb-sub':       '¿Has hecho un assessment aquí? Sé el primero en compartir tu experiencia.',
+      'footer':          'Los feedbacks son revisados antes de su publicación. No publiques documentos confidenciales ni datos personales de terceros.',
+      'search-ph':       'Buscar compañía…',
+      'modal-title':     'Publicar nuevo feedback',
+      'modal-sub':       'Comparte cómo fue el proceso. Tu feedback se revisa antes de publicarse.',
+      'f-company':       'Compañía *',
+      'f-company-ph':    'Selecciona una compañía…',
+      'f-name':          'Nombre o nickname *',
+      'f-email':         'Email',
+      'f-email-hint':    '(opcional, no público)',
+      'f-date':          'Fecha del assessment',
+      'f-date-hint':     'Si fue un único día.',
+      'f-date-start':    'Fecha inicio',
+      'f-date-start-hint': 'Si fueron varios días.',
+      'f-date-end':      'Fecha fin',
+      'f-position':      'Posición *',
+      'f-position-ph':   'Selecciona…',
+      'pos-cadet':       'Cadete',
+      'pos-fo':          'First Officer',
+      'pos-captain':     'Comandante',
+      'f-hours':         'Horas totales de vuelo',
+      'f-experience':    'Experiencia de vuelo (resumen)',
+      'f-aircraft':      'Aviones volados',
+      'f-aircraft-hint': 'Añade un bloque por cada tipo de avión.',
+      'f-add-aircraft':  '+ Añadir avión',
+      'f-text':          'Texto del feedback *',
+      'f-text-hint':     'Cómo fue el proceso, fases, entrevista técnica, simulador, HR interview, psychometric tests, consejos…',
+      'f-files':         'Archivos adjuntos',
+      'f-files-hint':    '(opcional, máx 5 · 10 MB c/u)',
+      'f-drop-strong':   'Arrastra archivos aquí',
+      'f-drop-or':       'o haz clic para seleccionar',
+      'f-legal':         'Confirmo que <strong>no estoy subiendo documentación confidencial</strong> de la compañía ni datos personales de terceros. Entiendo que mi feedback será revisado antes de publicarse.',
+      'f-cancel':        'Cancelar',
+      'f-submit':        'Enviar feedback',
+      'success-title':   '¡Feedback enviado!',
+      'success-body':    'Gracias por compartir tu experiencia. Tu feedback está pendiente de revisión y aparecerá publicado cuando sea aprobado.',
+      'success-close':   'Cerrar',
+      'filter-all':      'Todas',
+      'filter-commercial':'Comercial',
+      'filter-executive':'Ejecutiva',
+      'filter-cargo':    'Cargo',
+      'filter-low_cost': 'Low cost',
+      'filter-regional': 'Regional',
+      'filter-acmi':     'ACMI / Wet Lease',
+      'filter-generic':  'Genérica',
+      'pos-all':         'Todas las posiciones',
+    },
+    en: {
+      'kicker':          'Pilot Network · Assessment Feedbacks',
+      'title-1':         'Airline assessment',
+      'title-2':         'feedback & reviews',
+      'subtitle':        'Share your experience in pilot selection processes and learn from other members. Select a company to read real feedbacks or publish yours.',
+      'loading':         'Loading companies…',
+      'empty':           'No companies found with those filters.',
+      'back':            'Back to companies',
+      'add-feedback':    '+ Post feedback',
+      'from':            'From',
+      'to':              'To',
+      'clear':           'Clear',
+      'loading-fb':      'Loading feedbacks…',
+      'no-fb':           'No approved feedbacks yet for this company.',
+      'no-fb-sub':       'Had an assessment here? Be the first to share your experience.',
+      'footer':          'Feedbacks are reviewed before being published. Do not upload confidential company documents or third-party personal data.',
+      'search-ph':       'Search company…',
+      'modal-title':     'Post new feedback',
+      'modal-sub':       'Share how the process went. Your feedback is reviewed before being published.',
+      'f-company':       'Company *',
+      'f-company-ph':    'Select a company…',
+      'f-name':          'Name or nickname *',
+      'f-email':         'Email',
+      'f-email-hint':    '(optional, not public)',
+      'f-date':          'Assessment date',
+      'f-date-hint':     'If it was a single day.',
+      'f-date-start':    'Start date',
+      'f-date-start-hint': 'If it lasted several days.',
+      'f-date-end':      'End date',
+      'f-position':      'Position *',
+      'f-position-ph':   'Select…',
+      'pos-cadet':       'Cadet',
+      'pos-fo':          'First Officer',
+      'pos-captain':     'Captain',
+      'f-hours':         'Total flight hours',
+      'f-experience':    'Flight experience (summary)',
+      'f-aircraft':      'Aircraft flown',
+      'f-aircraft-hint': 'Add one block per aircraft type.',
+      'f-add-aircraft':  '+ Add aircraft',
+      'f-text':          'Feedback text *',
+      'f-text-hint':     'How was the process, phases, technical interview, simulator, HR interview, group exercise, psychometric tests, tips…',
+      'f-files':         'Attachments',
+      'f-files-hint':    '(optional, max 5 · 10 MB each)',
+      'f-drop-strong':   'Drag files here',
+      'f-drop-or':       'or click to select',
+      'f-legal':         'I confirm that <strong>I am not uploading confidential company documentation</strong> or personal data of third parties. I understand my feedback will be reviewed before being published.',
+      'f-cancel':        'Cancel',
+      'f-submit':        'Submit feedback',
+      'success-title':   'Feedback submitted!',
+      'success-body':    'Thank you for sharing your experience. Your feedback is pending review and will be published once approved.',
+      'success-close':   'Close',
+      'filter-all':      'All',
+      'filter-commercial':'Commercial',
+      'filter-executive':'Executive',
+      'filter-cargo':    'Cargo',
+      'filter-low_cost': 'Low cost',
+      'filter-regional': 'Regional',
+      'filter-acmi':     'ACMI / Wet Lease',
+      'filter-generic':  'Generic',
+      'pos-all':         'All positions',
+    }
+  };
+
+  var pnCurrentLang = 'es';
+
+  function pnSetLang(lang) {
+    pnCurrentLang = lang;
+    var c = PN_COPY[lang];
+
+    // Isla: botones activos
+    document.getElementById('pn-btn-es').className = 'pn-flag-btn' + (lang === 'es' ? ' active' : '');
+    document.getElementById('pn-btn-en').className = 'pn-flag-btn' + (lang === 'en' ? ' active' : '');
+
+    // Textos estáticos por id
+    var map = {
+      'pn-lang-kicker':    c['kicker'],
+      'pn-lang-title-1':   c['title-1'],
+      'pn-lang-title-2':   c['title-2'],
+      'pn-lang-subtitle':  c['subtitle'],
+      'pn-lang-loading':   c['loading'],
+      'pn-lang-empty':     c['empty'],
+      'pn-lang-back':      c['back'],
+      'pn-lang-add-feedback': c['add-feedback'],
+      'pn-lang-from':      c['from'],
+      'pn-lang-to':        c['to'],
+      'pn-lang-loading-fb':c['loading-fb'],
+      'pn-lang-no-fb':     c['no-fb'],
+      'pn-lang-no-fb-sub': c['no-fb-sub'],
+      'pn-lang-footer':    c['footer'],
+    };
+    Object.keys(map).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = map[id];
+    });
+
+    // Buscador placeholder
+    var si = document.getElementById('pn-search-input');
+    if (si) si.placeholder = c['search-ph'];
+
+    // Filtros categoría
+    var filterMap = { 'pnf-all':'filter-all','pnf-commercial':'filter-commercial','pnf-executive':'filter-executive','pnf-cargo':'filter-cargo','pnf-low_cost':'filter-low_cost','pnf-regional':'filter-regional','pnf-acmi':'filter-acmi','pnf-generic':'filter-generic' };
+    Object.keys(filterMap).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = c[filterMap[id]];
+    });
+
+    // Filtros posición en detalle
+    var posMap = { 'pnpos-all':'pos-all','pnpos-cadet':'pos-cadet','pnpos-fo':'pos-fo','pnpos-captain':'pos-captain' };
+    Object.keys(posMap).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = c[posMap[id]];
+    });
+
+    // Limpiar botón
+    var clr = document.getElementById('pn-date-clear');
+    if (clr) clr.textContent = c['clear'];
+
+    // Modal: data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+      var key = el.getAttribute('data-i18n');
+      if (c[key] !== undefined) el.innerHTML = c[key];
+    });
+  }
+  </script>
 </body>
 </html>
