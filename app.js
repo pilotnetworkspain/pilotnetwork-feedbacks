@@ -463,7 +463,7 @@
 
   function openFeedbackModal(slug) {
     var modal = $("#pn-feedback-modal");
-    modalIsOpen = true; // ← ANTES del reset: bloquea sendHeight durante todo el proceso de apertura
+    modalIsOpen = true; // bloquea sendHeight durante apertura
     resetFeedbackForm();
     if (slug) {
       var c = state.companies.find(function (x) { return x.slug === slug; });
@@ -471,18 +471,24 @@
     }
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-    // Avisa al padre para que haga scroll al iframe y lo muestre
+    // NO ponemos overflow:hidden en body — dentro del iframe rompe el scroll del padre
+    // Avisa al padre: él nos devolverá su scroll actual para centrar la card
     try {
       window.parent.postMessage({ type: "pn-feedback-modal-open" }, "*");
     } catch(e) {}
-    // NO llamamos sendHeight aquí: evita el loop infinito de resize
+    // Fallback: si el padre no responde (Webador filtra scripts),
+    // ponemos la card al principio del documento
+    setTimeout(function() {
+      var card = document.querySelector(".pn-feedback-modal-card");
+      if (card && parseInt(card.style.marginTop) <= 16) {
+        positionModalCard(0);
+      }
+    }, 300);
   }
   function closeFeedbackModal() {
     var modal = $("#pn-feedback-modal");
     modal.hidden = true;
     modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
     modalIsOpen = false;
     sendHeight();
   }
@@ -749,8 +755,28 @@
   }
 
   // ===================================================================
-  // RUTAS por hash (#/company/slug)
+  // POSICIONAMIENTO DEL MODAL DENTRO DEL IFRAME
   // ===================================================================
+  // El iframe no hace scroll: lo hace el padre (Webador).
+  // Cuando el modal se abre, pedimos al padre su scroll relativo
+  // al top del iframe. El padre responde con pn-parent-scroll-info
+  // y posicionamos la card en esa zona del documento.
+  function positionModalCard(scrollTopInIframe) {
+    var card = document.querySelector(".pn-feedback-modal-card");
+    if (!card) return;
+    // Dejamos 20px de margen desde el borde visible
+    var top = Math.max(16, scrollTopInIframe + 16);
+    card.style.marginTop = top + "px";
+  }
+
+  window.addEventListener("message", function (e) {
+    if (!e.data) return;
+    if (e.data.type === "pn-parent-scroll-info") {
+      positionModalCard(e.data.scrollTop || 0);
+    }
+  });
+
+
   function readHash() {
     var h = location.hash || "";
     var m = h.match(/^#\/company\/([\w-]+)$/);
