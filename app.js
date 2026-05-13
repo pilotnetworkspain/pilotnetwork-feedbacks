@@ -680,6 +680,7 @@
   }
 
 
+  function sanitizeFilename(name) {
     // Quitamos caracteres raros y mantenemos extensión
     var clean = name.replace(/[^\w.\-]+/g, "_").replace(/_+/g, "_");
     return clean.length > 80 ? clean.slice(-80) : clean;
