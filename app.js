@@ -16,9 +16,10 @@
     return;
   }
   var CFG = window.PN_SUPABASE_CONFIG;
-  var supabase = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
+  // Usamos fetch directo en lugar del SDK de Supabase
+  // var supabase = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, {
+  //   auth: { persistSession: false, autoRefreshToken: false }
+  // });
 
   // ------- Estado global -------
   var state = {
@@ -164,24 +165,36 @@
     $("#pn-state-empty").hidden = true;
     $("#pn-companies-grid").innerHTML = "";
 
-    var resp = await supabase
-      .from("companies_public")
-      .select("*")
-      .order("sort_order", { ascending: true })
-      .order("name", { ascending: true });
+    try {
+      var cfg = window.PN_SUPABASE_CONFIG;
+      var url = cfg.SUPABASE_URL + "/rest/v1/companies_public?select=*&order=sort_order.asc,name.asc";
+      var resp = await fetch(url, {
+        headers: {
+          'apikey': cfg.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY
+        }
+      });
+      var data = await resp.json();
 
-    showLoading("#pn-state-loading", false);
+      showLoading("#pn-state-loading", false);
 
-    if (resp.error) {
+      if (!resp.ok) {
+        var err = $("#pn-state-error");
+        err.hidden = false;
+        var errMsg = (data && data.message) ? data.message : data;
+        $("#pn-state-error-message").textContent =
+          "No se pudo cargar la lista de compañías. " + errMsg;
+        return;
+      }
+      state.companies = Array.isArray(data) ? data : [];
+      applyCompanyFilters();
+      fillCompanySelect();
+    } catch (e) {
+      showLoading("#pn-state-loading", false);
       var err = $("#pn-state-error");
       err.hidden = false;
-      $("#pn-state-error-message").textContent =
-        "No se pudo cargar la lista de compañías. " + (resp.error.message || "");
-      return;
+      $("#pn-state-error-message").textContent = "Error de red: " + e.message;
     }
-    state.companies = resp.data || [];
-    applyCompanyFilters();
-    fillCompanySelect();
   }
 
   function applyCompanyFilters() {
@@ -310,49 +323,43 @@
     $("#pn-detail-empty").hidden = true;
     $("#pn-detail-feedbacks-list").innerHTML = "";
 
-    // Cargamos en paralelo: feedbacks aprobados + aircraft_hours + feedback_files
-    var fbResp = await supabase
-      .from("feedbacks_public")
-      .select("*")
-      .eq("company_id", companyId)
-      .order("created_at", { ascending: false });
+    try {
+      var cfg = window.PN_SUPABASE_CONFIG;
+      var url = cfg.SUPABASE_URL + "/rest/v1/feedbacks_public?company_id=eq." + companyId + "&order=created_at.desc";
+      var resp = await fetch(url, {
+        headers: {
+          'apikey': cfg.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY
+        }
+      });
+      var feedbacks = await resp.json();
 
-    $("#pn-detail-loading").hidden = true;
+      $("#pn-detail-loading").hidden = true;
 
-    if (fbResp.error) {
+      if (!resp.ok) {
+        $("#pn-detail-feedbacks-list").innerHTML =
+          '<div class="pn-feedback-state pn-feedback-state-error"><p>Error al cargar feedbacks: ' + escapeHtml(feedbacks.message || 'Unknown error') + '</p></div>';
+        sendHeight();
+        return;
+      }
+
+      feedbacks = Array.isArray(feedbacks) ? feedbacks : [];
+      state.feedbacks = feedbacks;
+
+      if (!feedbacks.length) {
+        state.feedbacksFiltered = [];
+        $("#pn-detail-empty").hidden = false;
+        sendHeight();
+        return;
+      }
+
+      applyFeedbackFilters();
+    } catch (e) {
+      $("#pn-detail-loading").hidden = true;
       $("#pn-detail-feedbacks-list").innerHTML =
-        '<div class="pn-feedback-state pn-feedback-state-error"><p>Error al cargar feedbacks: '+escapeHtml(fbResp.error.message)+'</p></div>';
+        '<div class="pn-feedback-state pn-feedback-state-error"><p>Error de red: ' + escapeHtml(e.message) + '</p></div>';
       sendHeight();
-      return;
     }
-
-    var feedbacks = fbResp.data || [];
-    state.feedbacks = feedbacks;
-
-    if (!feedbacks.length) {
-      state.feedbacksFiltered = [];
-      $("#pn-detail-empty").hidden = false;
-      sendHeight();
-      return;
-    }
-
-    var ids = feedbacks.map(function (f) { return f.id; });
-    // aircraft_hours y feedback_files (RLS sólo deja ver los de aprobados)
-    var ahPromise = supabase.from("aircraft_hours").select("*").in("feedback_id", ids);
-    var ffPromise = supabase.from("feedback_files").select("*").in("feedback_id", ids);
-    var [ahResp, ffResp] = await Promise.all([ahPromise, ffPromise]);
-
-    var byFb = {};
-    feedbacks.forEach(function (f) { byFb[f.id] = { aircraft: [], files: [] }; });
-    (ahResp.data || []).forEach(function (a) { if (byFb[a.feedback_id]) byFb[a.feedback_id].aircraft.push(a); });
-    (ffResp.data || []).forEach(function (f) { if (byFb[f.feedback_id]) byFb[f.feedback_id].files.push(f); });
-
-    feedbacks.forEach(function (f) {
-      f.aircraft_hours = byFb[f.id].aircraft;
-      f.files = byFb[f.id].files;
-    });
-
-    applyFeedbackFilters();
   }
 
   function applyFeedbackFilters() {
