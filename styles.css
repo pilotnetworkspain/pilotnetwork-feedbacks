@@ -70,14 +70,15 @@ html, body {
 
 /* ===== DYNAMIC ISLAND ===== */
 .pn-island-anchor {
-  position: sticky;
+  position: fixed;
   top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 200;
   display: flex;
   justify-content: center;
-  padding: 0 24px;
-  margin-bottom: 0;
   pointer-events: none;
+  width: auto;
 }
 .pn-island {
   pointer-events: auto;
@@ -156,7 +157,7 @@ html, body {
 .pn-feedback-section {
   position: relative;
   isolation: isolate;
-  padding: 0 0 40px;
+  padding: 0;
   background:
     radial-gradient(circle at 50% -8%, rgba(98,151,255,.38), transparent 38%),
     radial-gradient(circle at 88% 18%, rgba(181,108,255,.18), transparent 32%),
@@ -194,7 +195,7 @@ html, body {
   max-width: 880px;
   margin: 0 auto 36px;
   animation: pnFadeUp .8s ease both;
-  padding-top: 32px;
+  padding-top: 72px;
 }
 .pn-feedback-kicker {
   display: inline-flex;
@@ -579,12 +580,12 @@ html, body {
 
 /* ===== Responsive ===== */
 @media (max-width: 900px) {
-  .pn-feedback-section { padding: 0 0 60px; }
+  .pn-feedback-section { padding: 0; }
   .pn-feedback-grid { gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
   .pn-feedback-modal-card { padding: 22px; }
 }
 @media (max-width: 640px) {
-  .pn-feedback-section { padding: 0 0 50px; }
+  .pn-feedback-section { padding: 0; }
   .pn-feedback-title { letter-spacing: -1.4px; }
   .pn-feedback-card { padding: 18px; border-radius: 20px; }
   .pn-feedback-detail-brand img { width: 56px; height: 56px; }
