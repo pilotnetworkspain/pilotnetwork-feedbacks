@@ -274,10 +274,18 @@
   // DETALLE DE COMPAÑÍA + FEEDBACKS
   // ===================================================================
   function scrollToTop() {
-    try {
-      window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*");
-    } catch(e) {}
+    // Intento 1: scroll dentro del iframe
     window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    // Intento 2: avisa al padre para que haga scroll al top del iframe
+    function notifyParent() {
+      try {
+        window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*");
+      } catch(e) {}
+    }
+    notifyParent();
+    setTimeout(notifyParent, 100);
+    setTimeout(notifyParent, 400);
   }
 
   function showListView() {
