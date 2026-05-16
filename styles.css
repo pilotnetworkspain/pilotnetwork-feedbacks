@@ -388,7 +388,7 @@ html, body {
 .pn-feedback-back:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.26); }
 
 /* ===== Detalle ===== */
-.pn-feedback-detail { animation: pnFadeUp .6s ease both; }
+.pn-feedback-detail { animation: pnFadeUp .6s ease both; padding-top: 72px; }
 .pn-feedback-detail-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 16px; }
 .pn-feedback-detail-brand  { display: flex; align-items: center; gap: 16px; min-width: 0; }
 .pn-feedback-detail-brand img { width: 68px; height: 68px; object-fit: contain; background: #fff; border-radius: 18px; padding: 8px; border: 1px solid rgba(255,255,255,.65); }
