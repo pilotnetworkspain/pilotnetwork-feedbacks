@@ -273,6 +273,13 @@
   // ===================================================================
   // DETALLE DE COMPAÑÍA + FEEDBACKS
   // ===================================================================
+  function scrollToTop() {
+    try {
+      window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*");
+    } catch(e) {}
+    window.scrollTo(0, 0);
+  }
+
   function showListView() {
     state.currentCompany = null;
     $("#pn-view-list-hero").hidden = false;
@@ -280,6 +287,7 @@
     $("#pn-companies-grid").hidden = false;
     $("#pn-company-detail").hidden = true;
     location.hash = "";
+    scrollToTop();
     sendHeight();
   }
   function showDetailView() {
@@ -288,6 +296,7 @@
     $("#pn-companies-grid").hidden = true;
     $("#pn-state-empty").hidden = true;
     $("#pn-company-detail").hidden = false;
+    scrollToTop();
     sendHeight();
   }
 
@@ -835,11 +844,8 @@
       } catch (e) {}
     });
   }
-  // Re-emit en resize y cuando cambian elementos abiertos
+  // Re-emit en resize
   window.addEventListener("resize", sendHeight);
-  // Observer para cambios dinámicos
-  var resizeObserver = new ResizeObserver(function () { sendHeight(); });
-  resizeObserver.observe(document.body);
 
   // ===================================================================
   // EVENTOS
