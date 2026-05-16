@@ -156,8 +156,7 @@ html, body {
 .pn-feedback-section {
   position: relative;
   isolation: isolate;
-  padding: 40px 22px 90px;
-  /* El fondo cubre TODO: antes del island y después */
+  padding: 0 0 40px;
   background:
     radial-gradient(circle at 50% -8%, rgba(98,151,255,.38), transparent 38%),
     radial-gradient(circle at 88% 18%, rgba(181,108,255,.18), transparent 32%),
