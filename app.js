@@ -1,3 +1,4 @@
+
 /* ===================================================================
    PILOT NETWORK · Assessment Feedbacks
    App principal (vista pública)
@@ -328,15 +329,6 @@
     showDetailView();
     location.hash = "#/company/" + slug;
     await loadFeedbacks(company.id);
-    // Scroll exacto: manda al padre la posición de los feedbacks dentro del iframe
-    setTimeout(function() {
-      var list = document.getElementById("pn-detail-feedbacks-list");
-      if (!list) return;
-      var offset = list.getBoundingClientRect().top + window.pageYOffset;
-      try {
-        window.parent.postMessage({ type: "pn-feedback-scroll-to", offset: offset }, "*");
-      } catch(e) {}
-    }, 400);
   }
 
   async function loadFeedbacks(companyId) {
@@ -469,6 +461,13 @@
       '</article>';
     }).join("");
     sendHeight();
+    // Scroll al padre para que vea los feedbacks
+    requestAnimationFrame(function() {
+      var list = document.getElementById("pn-detail-feedbacks-list");
+      if (!list) return;
+      var offset = list.getBoundingClientRect().top + (window.pageYOffset || 0);
+      try { window.parent.postMessage({ type: "pn-feedback-scroll-to", offset: Math.max(0, offset - 16) }, "*"); } catch(e) {}
+    });
   }
 
   // ===================================================================
