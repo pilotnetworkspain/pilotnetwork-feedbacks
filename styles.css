@@ -579,12 +579,12 @@ html, body {
 
 /* ===== Responsive ===== */
 @media (max-width: 900px) {
-  .pn-feedback-section { padding: 32px 16px 80px; }
+  .pn-feedback-section { padding: 0 0 60px; }
   .pn-feedback-grid { gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
   .pn-feedback-modal-card { padding: 22px; }
 }
 @media (max-width: 640px) {
-  .pn-feedback-section { padding: 24px 12px 70px; }
+  .pn-feedback-section { padding: 0 0 50px; }
   .pn-feedback-title { letter-spacing: -1.4px; }
   .pn-feedback-card { padding: 18px; border-radius: 20px; }
   .pn-feedback-detail-brand img { width: 56px; height: 56px; }
