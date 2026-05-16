@@ -50,11 +50,10 @@
       .replace(/'/g, "&#39;");
   }
 
-  // Logo con cadena de fallback: logo_url → icon.horse → placeholder SVG
+  // Logo: usa logo_url de la DB (ya configurado con la URL correcta)
+  // Fallback → placeholder SVG con iniciales
   function logoSrc(company) {
     if (company.logo_url && company.logo_url.trim()) return company.logo_url;
-    var domain = (company.fallback_domain || "").trim();
-    if (domain) return "https://icon.horse/icon/" + domain;
     return placeholderLogo(company.name);
   }
   function placeholderLogo(name) {
