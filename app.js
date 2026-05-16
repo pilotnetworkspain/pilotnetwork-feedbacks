@@ -50,26 +50,12 @@
       .replace(/'/g, "&#39;");
   }
 
-  // Logo (Clearbit → Google favicon → placeholder SVG)
+  // Logo con cadena de fallback: logo_url → icon.horse → placeholder SVG
   function logoSrc(company) {
     if (company.logo_url && company.logo_url.trim()) return company.logo_url;
     var domain = (company.fallback_domain || "").trim();
-    if (domain) {
-      return "https://logo.clearbit.com/" + domain;
-    }
+    if (domain) return "https://icon.horse/icon/" + domain;
     return placeholderLogo(company.name);
-  }
-
-  // Si Clearbit falla, intenta Google favicon, luego placeholder
-  function logoError(img, company) {
-    var domain = (company.fallback_domain || "").trim();
-    if (img.dataset.logoAttempt === "clearbit" && domain) {
-      img.dataset.logoAttempt = "favicon";
-      img.src = "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(domain) + "&sz=128";
-    } else {
-      img.onerror = null;
-      img.src = placeholderLogo(company.name);
-    }
   }
   function placeholderLogo(name) {
     var initials = (name || "?").split(/\s+/).slice(0,2).map(function(w){return w[0]||"";}).join("").toUpperCase();
@@ -178,7 +164,7 @@
 
     try {
       var cfg = window.PN_SUPABASE_CONFIG;
-      var url = cfg.SUPABASE_URL + "/rest/v1/companies_public?select=*&order=sort_order.asc,name.asc";
+      var url = cfg.SUPABASE_URL + "/rest/v1/companies_public?select=*&order=feedback_count.desc,sort_order.asc,name.asc";
       var resp = await fetch(url, {
         headers: {
           'apikey': cfg.SUPABASE_ANON_KEY,
@@ -239,8 +225,8 @@
         '<article class="pn-feedback-card" tabindex="0" data-slug="'+escapeHtml(c.slug)+'" style="animation-delay:'+(i*0.04).toFixed(2)+'s">'+
           '<span class="pn-feedback-badge" data-cat="'+escapeHtml(c.category)+'">'+escapeHtml(getCatLabel(c.category))+'</span>'+
           '<div class="pn-feedback-card-brand">'+
-            '<img loading="lazy" src="'+escapeHtml(src)+'" alt="'+escapeHtml(c.name)+'" data-logo-attempt="clearbit" '+
-            'onerror="(function(img){var d=\''+escapeHtml(c.fallback_domain||'')+'\';if(img.dataset.logoAttempt===\'clearbit\'&&d){img.dataset.logoAttempt=\'favicon\';img.src=\'https://www.google.com/s2/favicons?domain=\'+encodeURIComponent(d)+\'&sz=128\';}else{img.onerror=null;img.src=\''+placeholderLogo(c.name).replace(/'/g,"\\'").replace(/"/g,'&quot;')+'\';}})(this)" />'+
+            '<img loading="lazy" src="'+escapeHtml(src)+'" alt="'+escapeHtml(c.name)+'" '+
+            'onerror="this.onerror=null;this.src=\''+placeholderLogo(c.name).replace(/'/g,"\\'")+'\'" />'+
             '<div class="pn-feedback-card-brand-text">'+
               '<h3>'+escapeHtml(c.name)+'</h3>'+
             '</div>'+
