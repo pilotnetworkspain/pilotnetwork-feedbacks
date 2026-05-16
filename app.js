@@ -289,6 +289,7 @@
     $("#pn-view-list-toolbar").hidden = false;
     $("#pn-companies-grid").hidden = false;
     $("#pn-company-detail").hidden = true;
+    $("#pn-island-anchor") && ($(".pn-island-anchor").style.display = "flex");
     location.hash = "";
     scrollToTop();
     sendHeight();
@@ -299,6 +300,8 @@
     $("#pn-companies-grid").hidden = true;
     $("#pn-state-empty").hidden = true;
     $("#pn-company-detail").hidden = false;
+    var island = $(".pn-island-anchor");
+    if (island) island.style.display = "none";
     scrollToTop();
     sendHeight();
   }
