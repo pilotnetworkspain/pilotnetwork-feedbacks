@@ -328,15 +328,15 @@
     showDetailView();
     location.hash = "#/company/" + slug;
     await loadFeedbacks(company.id);
-    // Scroll automático a la lista de feedbacks
+    // Scroll exacto: manda al padre la posición de los feedbacks dentro del iframe
     setTimeout(function() {
-      var list = $("#pn-detail-feedbacks-list");
-      if (list) {
-        var top = list.getBoundingClientRect().top + window.pageYOffset - 20;
-        window.scrollTo({ top: top, behavior: 'smooth' });
-      }
-      try { window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*"); } catch(e) {}
-    }, 300);
+      var list = document.getElementById("pn-detail-feedbacks-list");
+      if (!list) return;
+      var offset = list.getBoundingClientRect().top + window.pageYOffset;
+      try {
+        window.parent.postMessage({ type: "pn-feedback-scroll-to", offset: offset }, "*");
+      } catch(e) {}
+    }, 400);
   }
 
   async function loadFeedbacks(companyId) {
