@@ -302,7 +302,6 @@
     $("#pn-company-detail").hidden = false;
     var island = $(".pn-island-anchor");
     if (island) island.style.display = "none";
-    scrollToTop();
     sendHeight();
   }
 
