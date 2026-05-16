@@ -243,7 +243,6 @@
             'onerror="(function(img){var d=\''+escapeHtml(c.fallback_domain||'')+'\';if(img.dataset.logoAttempt===\'clearbit\'&&d){img.dataset.logoAttempt=\'favicon\';img.src=\'https://www.google.com/s2/favicons?domain=\'+encodeURIComponent(d)+\'&sz=128\';}else{img.onerror=null;img.src=\''+placeholderLogo(c.name).replace(/'/g,"\\'").replace(/"/g,'&quot;')+'\';}})(this)" />'+
             '<div class="pn-feedback-card-brand-text">'+
               '<h3>'+escapeHtml(c.name)+'</h3>'+
-              '<p>'+escapeHtml(c.company_type || getCatLabel(c.category))+'</p>'+
             '</div>'+
           '</div>'+
           '<div class="pn-feedback-card-stat">'+
@@ -344,6 +343,15 @@
     showDetailView();
     location.hash = "#/company/" + slug;
     await loadFeedbacks(company.id);
+    // Scroll automático a la lista de feedbacks
+    setTimeout(function() {
+      var list = $("#pn-detail-feedbacks-list");
+      if (list) {
+        var top = list.getBoundingClientRect().top + window.pageYOffset - 20;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+      try { window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*"); } catch(e) {}
+    }, 300);
   }
 
   async function loadFeedbacks(companyId) {
