@@ -721,6 +721,19 @@
     var label = btn.querySelector(".pn-feedback-btn-label");
     var spin = btn.querySelector(".pn-feedback-btn-spinner");
 
+    // Validar Turnstile (soft: avisa en consola pero no bloquea si no carga)
+    var tsResponse = document.querySelector("[name='cf-turnstile-response']");
+    if (!tsResponse || !tsResponse.value) {
+      // Si el widget está visible pero no completado → bloqueamos
+      var tsWidget = document.getElementById("pn-turnstile");
+      if (tsWidget && tsWidget.offsetHeight > 0) {
+        setFormStatus("Por favor, completa la verificación de seguridad.", "error");
+        sendHeight();
+        return;
+      }
+      // Si el widget no cargó (adblocker, etc.) → dejamos pasar
+    }
+
     var collected = collectFormData();
     var errors = validate(collected);
     if (errors.length) {
@@ -929,6 +942,26 @@
       $("#pn-f-text-count").textContent = String(e.target.value.length);
     });
     $("#pn-feedback-form").addEventListener("submit", onSubmit);
+
+    // Anónimo: bloquea/desbloquea campo nombre
+    var anonChk = $("#pn-f-anon");
+    var nameInp = $("#pn-f-name");
+    if (anonChk && nameInp) {
+      anonChk.addEventListener("change", function() {
+        if (this.checked) {
+          nameInp.value = "Anónimo";
+          nameInp.disabled = true;
+          nameInp.style.opacity = "0.4";
+          nameInp.removeAttribute("required");
+        } else {
+          nameInp.value = "";
+          nameInp.disabled = false;
+          nameInp.style.opacity = "1";
+          nameInp.setAttribute("required", "required");
+          nameInp.focus();
+        }
+      });
+    }
 
     // Hash
     window.addEventListener("hashchange", readHash);
