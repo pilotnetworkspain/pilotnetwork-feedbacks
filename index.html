@@ -12,6 +12,7 @@
     body>*:not(script):not(style){margin:0!important;padding-left:0!important;padding-right:0!important}
   </style>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="pn-feedback-root">
 
@@ -177,7 +178,14 @@
         <div class="pn-feedback-row">
           <div class="pn-feedback-field">
             <label for="pn-f-name" data-i18n="f-name">Nombre o nickname *</label>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <label class="pn-feedback-checkbox pn-anon-toggle" style="margin:0">
+                <input type="checkbox" id="pn-f-anon" />
+                <span data-i18n="f-anon">Publicar como <strong>Anónimo</strong></span>
+              </label>
+            </div>
             <input id="pn-f-name" name="member_name" type="text" maxlength="80" required placeholder="Ej. JuanP737" />
+          </div>
           </div>
           <div class="pn-feedback-field">
             <label for="pn-f-email" data-i18n="f-email">Email <span class="pn-feedback-hint" data-i18n="f-email-hint">(opcional, no público)</span></label>
@@ -248,6 +256,8 @@
             <span data-i18n="f-legal">Confirmo que <strong>no estoy subiendo documentación confidencial</strong> de la compañía ni datos personales de terceros. Entiendo que mi feedback será revisado antes de publicarse.</span>
           </label>
         </div>
+        <!-- Cloudflare Turnstile -->
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAADRB0k2XAVw_-oWG" data-theme="dark" data-size="flexible" id="pn-turnstile"></div>
         <div class="pn-feedback-form-status" id="pn-form-status" hidden></div>
         <div class="pn-feedback-form-actions">
           <button type="button" class="pn-feedback-btn pn-feedback-btn-ghost" data-close-modal="1" data-i18n="f-cancel">Cancelar</button>
@@ -299,6 +309,7 @@
       'f-company':       'Compañía *',
       'f-company-ph':    'Selecciona una compañía…',
       'f-name':          'Nombre o nickname *',
+      'f-anon':          'Publicar como <strong>Anónimo</strong>',
       'f-email':         'Email',
       'f-email-hint':    '(opcional, no público)',
       'f-date':          'Fecha del assessment',
@@ -360,6 +371,7 @@
       'f-company':       'Company *',
       'f-company-ph':    'Select a company…',
       'f-name':          'Name or nickname *',
+      'f-anon':          'Post as <strong>Anonymous</strong>',
       'f-email':         'Email',
       'f-email-hint':    '(optional, not public)',
       'f-date':          'Assessment date',
