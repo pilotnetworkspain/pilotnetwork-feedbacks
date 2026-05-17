@@ -818,7 +818,54 @@
         }
       }
 
-      // 3) Éxito
+      // 3) Subir archivos a Supabase Storage + registrar en feedback_files
+      if (selectedFiles.length) {
+        setFormStatus("Subiendo archivos…", "info");
+        for (var fi = 0; fi < selectedFiles.length; fi++) {
+          var sf = selectedFiles[fi];
+          if (sf.error) continue;
+          var cleanName = sanitizeFilename(sf.file.name);
+          var filePath = feedbackId + "/" + Date.now() + "_" + cleanName;
+          // Upload al bucket via REST
+          var uploadUrl = cfg.SUPABASE_URL + "/storage/v1/object/" + cfg.STORAGE_BUCKET + "/" + filePath;
+          var uploadResp = await fetch(uploadUrl, {
+            method: "POST",
+            headers: {
+              'apikey': cfg.SUPABASE_ANON_KEY,
+              'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+              'Content-Type': sf.file.type || 'application/octet-stream',
+              'x-upsert': 'true'
+            },
+            body: sf.file
+          });
+          if (!uploadResp.ok) {
+            var upErr = await uploadResp.json().catch(function(){return {};});
+            console.warn("[pn-feedback] file upload warn:", upErr.message || uploadResp.status);
+            continue; // no bloqueamos el feedback si falla un archivo
+          }
+          // Registrar en feedback_files
+          var ffUrl = cfg.SUPABASE_URL + "/rest/v1/feedback_files";
+          await fetch(ffUrl, {
+            method: "POST",
+            headers: {
+              'apikey': cfg.SUPABASE_ANON_KEY,
+              'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              feedback_id: feedbackId,
+              file_name: sf.file.name,
+              file_path: filePath,
+              file_size: sf.file.size,
+              file_type: sf.file.type || 'application/octet-stream',
+              storage_bucket: cfg.STORAGE_BUCKET
+            })
+          });
+        }
+      }
+
+      // 4) Éxito
       $("#pn-feedback-form").hidden = true;
       $("#pn-form-success").hidden = false;
       sendHeight();
