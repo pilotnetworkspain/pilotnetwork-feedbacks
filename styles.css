@@ -558,6 +558,14 @@ html, body {
 .pn-feedback-checkbox input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--pn-blue); }
 .pn-feedback-checkbox strong { color: #fff; }
 
+/* Anon toggle */
+.pn-anon-toggle { background: rgba(110,168,255,.07); border: 1px solid rgba(110,168,255,.2); border-radius: 8px; padding: 8px 12px !important; font-size: 13px !important; color: var(--pn-blue2, #9DB4FF) !important; transition: background .2s; }
+.pn-anon-toggle:hover { background: rgba(110,168,255,.14); }
+.pn-anon-toggle input { accent-color: var(--pn-blue); }
+
+/* Turnstile */
+.cf-turnstile { margin: 4px 0 2px; border-radius: 10px; overflow: hidden; }
+
 /* Form status */
 .pn-feedback-form-status { padding: 12px 14px; border-radius: 10px; font-size: 13.5px; font-weight: 700; }
 .pn-feedback-form-status[data-type="error"]   { background: rgba(255,138,138,.1); border: 1px solid rgba(255,138,138,.4); color: var(--pn-red); }
