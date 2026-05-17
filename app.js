@@ -426,19 +426,45 @@
         : "";
 
       var filesHtml = (f.files && f.files.length)
-        ? '<div class="pn-feedback-item-block">'+
-            '<h4>'+escapeHtml(t('attachments'))+'</h4>'+
-            '<ul class="pn-feedback-files-list">'+
-              f.files.map(function (file) {
-                var baseUrl = window.PN_SUPABASE_CONFIG.SUPABASE_URL + '/storage/v1/object/public/';
+        ? (function() {
+            var cfg = window.PN_SUPABASE_CONFIG;
+            var imageExts = cfg.IMAGE_EXTENSIONS || ["jpg","jpeg","png","webp"];
+            var baseUrl = cfg.SUPABASE_URL + '/storage/v1/object/public/';
+            var images = f.files.filter(function(file) {
+              var ext = (file.file_name || "").split(".").pop().toLowerCase();
+              return imageExts.indexOf(ext) !== -1;
+            });
+            var docs = f.files.filter(function(file) {
+              var ext = (file.file_name || "").split(".").pop().toLowerCase();
+              return imageExts.indexOf(ext) === -1;
+            });
+            var html = '<div class="pn-feedback-item-block"><h4>'+escapeHtml(t('attachments'))+'</h4>';
+            // Imágenes en grid
+            if (images.length) {
+              html += '<div class="pn-feedback-images-grid">';
+              images.forEach(function(file) {
                 var url = baseUrl + (file.storage_bucket || "feedback-files") + '/' + encodeURIComponent(file.file_path);
-                return '<li><a href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer">'+
+                html += '<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer" class="pn-feedback-image-thumb">'+
+                  '<img src="'+escapeHtml(url)+'" alt="'+escapeHtml(file.file_name)+'" loading="lazy" />'+
+                '</a>';
+              });
+              html += '</div>';
+            }
+            // Documentos como lista
+            if (docs.length) {
+              html += '<ul class="pn-feedback-files-list">';
+              docs.forEach(function(file) {
+                var url = baseUrl + (file.storage_bucket || "feedback-files") + '/' + encodeURIComponent(file.file_path);
+                html += '<li><a href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer">'+
                   '📎 '+escapeHtml(file.file_name)+
                   (file.file_size ? ' <span style="color:#9da8ba">('+formatBytes(file.file_size)+')</span>' : '')+
                 '</a></li>';
-              }).join("")+
-            '</ul>'+
-          '</div>'
+              });
+              html += '</ul>';
+            }
+            html += '</div>';
+            return html;
+          })()
         : "";
 
       return '<article class="pn-feedback-item">'+
