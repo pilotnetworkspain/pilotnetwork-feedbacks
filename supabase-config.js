@@ -4,13 +4,17 @@ window.PN_SUPABASE_CONFIG = {
   STORAGE_BUCKET: "feedback-files",
   MAX_FILE_SIZE_BYTES: 10485760,
   MAX_FILES_PER_FEEDBACK: 5,
-  ALLOWED_FILE_EXTENSIONS: ["pdf", "doc", "docx", "xls", "xlsx", "csv"],
+  ALLOWED_FILE_EXTENSIONS: ["pdf", "doc", "docx", "xls", "xlsx", "csv", "jpg", "jpeg", "png", "webp"],
   ALLOWED_MIME_TYPES: [
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/vnd.ms-excel",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "text/csv"
-  ]
+    "text/csv",
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ],
+  IMAGE_EXTENSIONS: ["jpg", "jpeg", "png", "webp"]
 };
