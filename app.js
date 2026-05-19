@@ -319,8 +319,7 @@
     $("#pn-detail-logo").alt = company.name;
     $("#pn-detail-logo").onerror = function () { this.onerror = null; this.src = placeholderLogo(company.name); };
     $("#pn-detail-name").textContent = company.name;
-    $("#pn-detail-subtitle").textContent = (company.company_type || getCatLabel(company.category) || "") +
-      (company.feedback_count != null ? "  ·  " + company.feedback_count + " feedback" + (company.feedback_count===1?"":"s") : "");
+    $("#pn-detail-subtitle").textContent = company.feedback_count != null ? company.feedback_count + " feedback" + (company.feedback_count===1?"":"s") : "";
     $("#pn-detail-description").textContent = company.description || "";
 
     // Reset mini-filtros UI
