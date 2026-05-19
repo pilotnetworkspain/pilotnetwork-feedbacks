@@ -476,7 +476,11 @@
             '<span class="pn-feedback-pill">'+escapeHtml(dateLabel)+'</span>'+
           '</div>'+
           '<div>'+
-            '<div class="pn-feedback-item-author">'+escapeHtml(f.member_name || t('anonymous'))+'</div>'+
+            '<div class="pn-feedback-item-author">'+escapeHtml(
+              (f.member_name === 'Anónimo' || f.member_name === 'Anonymous' || !f.member_name)
+                ? t('anonymous')
+                : f.member_name
+            )+'</div>'+
             '<div class="pn-feedback-item-date">'+escapeHtml(t('published-on'))+' '+formatDate(f.created_at.slice(0,10))+'</div>'+
           '</div>'+
         '</div>'+
@@ -1245,8 +1249,9 @@
     var nameInp = $("#pn-f-name");
     if (anonChk && nameInp) {
       anonChk.addEventListener("change", function() {
+        var anonLabel = (window.pnCurrentLang === 'en') ? 'Anonymous' : 'Anónimo';
         if (this.checked) {
-          nameInp.value = "Anónimo";
+          nameInp.value = anonLabel;
           nameInp.disabled = true;
           nameInp.style.opacity = "0.4";
           nameInp.removeAttribute("required");
