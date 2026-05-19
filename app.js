@@ -320,7 +320,6 @@
     $("#pn-detail-logo").onerror = function () { this.onerror = null; this.src = placeholderLogo(company.name); };
     $("#pn-detail-name").textContent = company.name;
     $("#pn-detail-subtitle").textContent = company.feedback_count != null ? company.feedback_count + " feedback" + (company.feedback_count===1?"":"s") : "";
-    $("#pn-detail-description").textContent = company.description || "";
 
     // Reset mini-filtros UI
     $$("#pn-company-detail [data-pos]").forEach(function (b) { b.classList.toggle("is-active", b.getAttribute("data-pos") === "all"); });
@@ -1282,7 +1281,9 @@
     };
     await loadCompanies();
     // Aplicar idioma inicial una vez cargado todo
-    if (typeof window.pnSetLang === 'function') window.pnSetLang(window.pnCurrentLang || 'en');
+    if (typeof window.pnSetLang === 'function') {
+      window.pnSetLang(window.pnCurrentLang || 'en');
+    }
     if (state._pendingSlug) {
       var slug = state._pendingSlug;
       state._pendingSlug = null;
