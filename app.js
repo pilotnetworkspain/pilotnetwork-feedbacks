@@ -491,11 +491,11 @@
       '</article>';
     }).join("");
     sendHeight();
-    // Scroll al padre para que vea los feedbacks
+    // Scroll al padre para que vea el inicio de la compañía
     requestAnimationFrame(function() {
-      var list = document.getElementById("pn-detail-feedbacks-list");
-      if (!list) return;
-      var offset = list.getBoundingClientRect().top + (window.pageYOffset || 0);
+      var detail = document.getElementById("pn-company-detail");
+      if (!detail) return;
+      var offset = detail.getBoundingClientRect().top + (window.pageYOffset || 0);
       try { window.parent.postMessage({ type: "pn-feedback-scroll-to", offset: Math.max(0, offset - 16) }, "*"); } catch(e) {}
     });
   }
@@ -529,11 +529,7 @@
     }
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
-    // Siempre posicionar la card al inicio visible (scroll del padre)
-    positionModalCard(0);
-    try {
-      window.parent.postMessage({ type: "pn-feedback-modal-open" }, "*");
-    } catch(e) {}
+    sendHeight();
   }
   function closeFeedbackModal() {
     var modal = $("#pn-feedback-modal");
