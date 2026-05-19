@@ -135,11 +135,21 @@
           <button class="pn-feedback-btn pn-feedback-btn-primary" id="pn-detail-add-feedback" type="button">
             <span id="pn-lang-add-feedback">+ Publicar feedback</span>
           </button>
-          <button class="pn-feedback-btn pn-feedback-btn-ghost" id="pn-detail-download" type="button" title="Descargar feedbacks en Word">
-            📄 <span id="pn-lang-download">Descargar Word</span>
+          <button class="pn-feedback-btn pn-btn-download-word" id="pn-detail-download" type="button" title="Download Word">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+              <rect width="24" height="24" rx="4" fill="#2B579A"/>
+              <path d="M6 7h5l1.5 5L14 7h5v10h-2V9.5l-2.5 7.5h-2L10 9.5V17H8V9h-.5L6 17H4V7h2z" fill="white" font-size="8"/>
+              <text x="3" y="17" font-family="Arial" font-size="9" font-weight="900" fill="white">W</text>
+            </svg>
+            <span id="pn-lang-download">Download Word</span>
           </button>
-          <button class="pn-feedback-btn pn-feedback-btn-ghost" id="pn-detail-download-files" type="button" title="Descargar archivos adjuntos en ZIP">
-            🗜️ <span>Descargar archivos</span>
+          <button class="pn-feedback-btn pn-btn-download-zip" id="pn-detail-download-files" type="button" title="Download files ZIP">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+              <rect width="24" height="24" rx="4" fill="#E8A000"/>
+              <path d="M12 4v10m0 0l-3-3m3 3l3-3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="4" y="16" width="16" height="4" rx="1" fill="white" opacity="0.9"/>
+            </svg>
+            <span id="pn-lang-download-files">Download files</span>
           </button>
         </header>
         <p id="pn-detail-description" class="pn-feedback-detail-description"></p>
@@ -317,6 +327,8 @@
       'empty':           'No se encontraron compañías con esos filtros.',
       'back':            'Volver a compañías',
       'add-feedback':    '+ Publicar feedback',
+      'download-word':   'Descargar Word',
+      'download-files':  'Descargar archivos',
       'from':            'Desde',
       'to':              'Hasta',
       'clear':           'Limpiar',
@@ -379,6 +391,8 @@
       'empty':           'No companies found with those filters.',
       'back':            'Back to companies',
       'add-feedback':    '+ Post feedback',
+      'download-word':   'Download Word',
+      'download-files':  'Download files',
       'from':            'From',
       'to':              'To',
       'clear':           'Clear',
@@ -455,6 +469,8 @@
       'pn-lang-empty':     c['empty'],
       'pn-lang-back':      c['back'],
       'pn-lang-add-feedback': c['add-feedback'],
+      'pn-lang-download':     c['download-word'],
+      'pn-lang-download-files': c['download-files'],
       'pn-lang-from':      c['from'],
       'pn-lang-to':        c['to'],
       'pn-lang-loading-fb':c['loading-fb'],
