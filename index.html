@@ -35,16 +35,7 @@
   <!-- ============ DYNAMIC ISLAND (idioma) ============ -->
   <div class="pn-island-anchor">
     <div class="pn-island" role="tablist" aria-label="Language selector">
-      <button class="pn-flag-btn active" id="pn-btn-es" onclick="pnSetLang('es')" aria-label="Español">
-        <span class="pn-flag" aria-hidden="true">
-          <svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid slice">
-            <rect width="60" height="40" fill="#AA151B"/>
-            <rect y="10" width="60" height="20" fill="#F1BF00"/>
-          </svg>
-        </span>
-        <span class="pn-island-label">ESPAÑOL</span>
-      </button>
-      <button class="pn-flag-btn" id="pn-btn-en" onclick="pnSetLang('en')" aria-label="English">
+      <button class="pn-flag-btn active" id="pn-btn-en" onclick="pnSetLang('en')" aria-label="English">
         <span class="pn-flag" aria-hidden="true">
           <svg viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice">
             <clipPath id="ukclip"><rect width="60" height="30"/></clipPath>
@@ -61,6 +52,15 @@
           </svg>
         </span>
         <span class="pn-island-label">ENGLISH</span>
+      </button>
+      <button class="pn-flag-btn" id="pn-btn-es" onclick="pnSetLang('es')" aria-label="Español">
+        <span class="pn-flag" aria-hidden="true">
+          <svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid slice">
+            <rect width="60" height="40" fill="#AA151B"/>
+            <rect y="10" width="60" height="20" fill="#F1BF00"/>
+          </svg>
+        </span>
+        <span class="pn-island-label">ESPAÑOL</span>
       </button>
     </div>
   </div>
@@ -434,7 +434,7 @@
     }
   };
 
-  var pnCurrentLang = 'es';
+  var pnCurrentLang = 'en';
 
   function pnSetLang(lang) {
     pnCurrentLang = lang;
