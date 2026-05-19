@@ -558,7 +558,48 @@ html, body {
 .pn-feedback-checkbox input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--pn-blue); }
 .pn-feedback-checkbox strong { color: #fff; }
 
-/* Anon toggle */
+/* Botones descarga premium */
+.pn-btn-download-word,
+.pn-btn-download-zip {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 42px; padding: 10px 18px; border-radius: 12px;
+  font: inherit; font-size: 13px; font-weight: 800;
+  border: 1px solid transparent; cursor: pointer;
+  white-space: nowrap; transition: transform .25s, box-shadow .25s, filter .25s;
+  position: relative; overflow: hidden;
+}
+.pn-btn-download-word {
+  background: linear-gradient(135deg, #2B579A, #1a3a70);
+  color: #fff;
+  border-color: rgba(255,255,255,.2);
+  box-shadow: 0 8px 24px rgba(43,87,154,.4);
+}
+.pn-btn-download-zip {
+  background: linear-gradient(135deg, #E8A000, #c47f00);
+  color: #fff;
+  border-color: rgba(255,255,255,.2);
+  box-shadow: 0 8px 24px rgba(232,160,0,.35);
+}
+.pn-btn-download-word:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 14px 32px rgba(43,87,154,.55);
+  filter: brightness(1.12);
+}
+.pn-btn-download-zip:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 14px 32px rgba(232,160,0,.5);
+  filter: brightness(1.12);
+}
+.pn-btn-download-word::before,
+.pn-btn-download-zip::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.15), transparent 60%);
+  pointer-events: none;
+}
+.pn-btn-download-word:active, .pn-btn-download-zip:active {
+  transform: translateY(0) scale(.98);
+}
 .pn-anon-toggle { background: rgba(110,168,255,.07); border: 1px solid rgba(110,168,255,.2); border-radius: 8px; padding: 8px 12px !important; font-size: 13px !important; color: var(--pn-blue2, #9DB4FF) !important; transition: background .2s; }
 .pn-anon-toggle:hover { background: rgba(110,168,255,.14); }
 .pn-anon-toggle input { accent-color: var(--pn-blue); }
