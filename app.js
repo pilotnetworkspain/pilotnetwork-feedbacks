@@ -521,7 +521,7 @@
 
   function openFeedbackModal(slug) {
     var modal = $("#pn-feedback-modal");
-    modalIsOpen = true; // bloquea sendHeight durante apertura
+    modalIsOpen = true;
     resetFeedbackForm();
     if (slug) {
       var c = state.companies.find(function (x) { return x.slug === slug; });
@@ -529,19 +529,11 @@
     }
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
-    // NO ponemos overflow:hidden en body — dentro del iframe rompe el scroll del padre
-    // Avisa al padre: él nos devolverá su scroll actual para centrar la card
+    // Siempre posicionar la card al inicio visible (scroll del padre)
+    positionModalCard(0);
     try {
       window.parent.postMessage({ type: "pn-feedback-modal-open" }, "*");
     } catch(e) {}
-    // Fallback: si el padre no responde (Webador filtra scripts),
-    // ponemos la card al principio del documento
-    setTimeout(function() {
-      var card = document.querySelector(".pn-feedback-modal-card");
-      if (card && parseInt(card.style.marginTop) <= 16) {
-        positionModalCard(0);
-      }
-    }, 300);
   }
   function closeFeedbackModal() {
     var modal = $("#pn-feedback-modal");
@@ -894,7 +886,6 @@
   function positionModalCard(scrollTopInIframe) {
     var card = document.querySelector(".pn-feedback-modal-card");
     if (!card) return;
-    // Dejamos 20px de margen desde el borde visible
     var top = Math.max(16, scrollTopInIframe + 16);
     card.style.marginTop = top + "px";
   }
