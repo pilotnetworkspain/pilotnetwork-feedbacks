@@ -946,6 +946,221 @@
   window.addEventListener("resize", sendHeight);
 
   // ===================================================================
+  // DESCARGA FEEDBACKS EN WORD (.docx)
+  // ===================================================================
+  function downloadFeedbacksDocx() {
+    var company = state.currentCompany;
+    var feedbacks = state.feedbacksFiltered;
+    if (!company || !feedbacks.length) {
+      alert("No hay feedbacks para descargar.");
+      return;
+    }
+
+    // Construye el contenido XML del documento Word
+    function xmlEscape(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function para(text, opts) {
+      opts = opts || {};
+      var sz = opts.size || 24;
+      var bold = opts.bold ? "<w:b/>" : "";
+      var color = opts.color ? "<w:color w:val=\"" + opts.color + "\"/>" : "";
+      var spaceAfter = opts.spaceAfter || 120;
+      var align = opts.align ? "<w:jc w:val=\"" + opts.align + "\"/>" : "";
+      var lines = String(text || "").split("\n");
+      return lines.map(function(line, i) {
+        return "<w:p>" +
+          "<w:pPr><w:spacing w:after=\"" + (i === lines.length-1 ? spaceAfter : 0) + "\"/>" + align + "</w:pPr>" +
+          "<w:r><w:rPr>" + bold + color + "<w:sz w:val=\"" + sz + "\"/><w:szCs w:val=\"" + sz + "\"/></w:rPr>" +
+          "<w:t xml:space=\"preserve\">" + xmlEscape(line) + "</w:t></w:r>" +
+        "</w:p>";
+      }).join("");
+    }
+
+    function divider() {
+      return "<w:p><w:pPr><w:pBdr><w:bottom w:val=\"single\" w:sz=\"6\" w:space=\"1\" w:color=\"334466\"/></w:pBdr><w:spacing w:after=\"160\"/></w:pPr></w:p>";
+    }
+
+    var bodyXml = "";
+
+    // Portada
+    bodyXml += para("PILOT NETWORK", { bold: true, size: 40, color: "1a3a6e", align: "center", spaceAfter: 80 });
+    bodyXml += para("Assessment Feedbacks", { bold: true, size: 28, color: "2255aa", align: "center", spaceAfter: 80 });
+    bodyXml += para(company.name, { bold: true, size: 36, color: "000000", align: "center", spaceAfter: 80 });
+    bodyXml += para(getCatLabel(company.category), { size: 22, color: "666666", align: "center", spaceAfter: 80 });
+    bodyXml += para(feedbacks.length + " feedback" + (feedbacks.length === 1 ? "" : "s") + " publicado" + (feedbacks.length === 1 ? "" : "s"), { size: 20, color: "888888", align: "center", spaceAfter: 200 });
+    bodyXml += para("Generado: " + new Date().toLocaleDateString("es-ES"), { size: 18, color: "aaaaaa", align: "center", spaceAfter: 400 });
+    bodyXml += "<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>";
+
+    // Feedbacks
+    feedbacks.forEach(function(f, idx) {
+      bodyXml += para("Feedback #" + (idx + 1), { bold: true, size: 28, color: "1a3a6e", spaceAfter: 80 });
+
+      // Meta
+      var pos = getPosLabel(f.position);
+      var dateLabel = f.assessment_date
+        ? formatDate(f.assessment_date)
+        : (f.assessment_start_date ? formatDate(f.assessment_start_date) + (f.assessment_end_date ? " — " + formatDate(f.assessment_end_date) : "") : "Fecha no indicada");
+
+      bodyXml += para("Posición: " + pos, { size: 20, color: "334466", spaceAfter: 40 });
+      bodyXml += para("Fecha assessment: " + dateLabel, { size: 20, color: "334466", spaceAfter: 40 });
+      if (f.total_flight_hours != null) bodyXml += para("Horas totales: " + f.total_flight_hours + "h", { size: 20, color: "334466", spaceAfter: 40 });
+      bodyXml += para("Publicado por: " + (f.member_name || "Anónimo"), { size: 20, color: "334466", spaceAfter: 40 });
+      bodyXml += para("Fecha publicación: " + formatDate(f.created_at.slice(0,10)), { size: 18, color: "888888", spaceAfter: 120 });
+
+      // Experiencia
+      if (f.flight_experience_summary) {
+        bodyXml += para("Experiencia de vuelo:", { bold: true, size: 22, color: "000000", spaceAfter: 60 });
+        bodyXml += para(f.flight_experience_summary, { size: 20, color: "333333", spaceAfter: 120 });
+      }
+
+      // Feedback
+      bodyXml += para("Feedback:", { bold: true, size: 22, color: "000000", spaceAfter: 60 });
+      bodyXml += para(f.feedback_text, { size: 20, color: "222222", spaceAfter: 120 });
+
+      // Aviones
+      if (f.aircraft_hours && f.aircraft_hours.length) {
+        bodyXml += para("Aviones volados:", { bold: true, size: 22, color: "000000", spaceAfter: 60 });
+        f.aircraft_hours.forEach(function(a) {
+          bodyXml += para("  • " + a.aircraft_type + (a.hours != null ? " · " + a.hours + "h" : ""), { size: 20, color: "334466", spaceAfter: 40 });
+        });
+      }
+
+      bodyXml += divider();
+      if (idx < feedbacks.length - 1) {
+        bodyXml += "<w:p><w:pPr><w:spacing w:after=\"160\"/></w:pPr></w:p>";
+      }
+    });
+
+    // Footer
+    bodyXml += para("pilotnetwork.es · Assessment Feedbacks", { size: 16, color: "aaaaaa", align: "center", spaceAfter: 0 });
+
+    // Construye el ZIP con el .docx
+    var docXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" ' +
+      'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
+      'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+      '<w:body>' + bodyXml +
+      '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>' +
+      '<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>' +
+      '</w:body></w:document>';
+
+    // Genera el .docx como blob usando JSZip (cargado dinámicamente)
+    var script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+    script.onload = function() {
+      var zip = new JSZip();
+      zip.file("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+      zip.file("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+      zip.file("word/document.xml", docXml);
+      zip.file("word/_rels/document.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>');
+      zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }).then(function(blob) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "feedbacks-" + company.slug + ".docx";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      });
+    };
+    if (!window.JSZip) {
+      document.head.appendChild(script);
+    } else {
+      script.onload();
+    }
+  }
+
+  // ===================================================================
+  // DESCARGA ARCHIVOS ADJUNTOS EN ZIP
+  // ===================================================================
+  async function downloadFeedbacksFiles() {
+    var company = state.currentCompany;
+    var feedbacks = state.feedbacksFiltered;
+    if (!company || !feedbacks.length) {
+      alert("No hay feedbacks para descargar.");
+      return;
+    }
+
+    // Recopilar todos los archivos de todos los feedbacks
+    var allFiles = [];
+    feedbacks.forEach(function(f, idx) {
+      if (f.files && f.files.length) {
+        f.files.forEach(function(file) {
+          allFiles.push({ file: file, feedbackIdx: idx + 1 });
+        });
+      }
+    });
+
+    if (!allFiles.length) {
+      alert("No hay archivos adjuntos en estos feedbacks.");
+      return;
+    }
+
+    // Cargar JSZip si no está cargado
+    function loadJSZip(cb) {
+      if (window.JSZip) return cb();
+      var script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+      script.onload = cb;
+      document.head.appendChild(script);
+    }
+
+    loadJSZip(async function() {
+      var btn = $("#pn-detail-download-files");
+      btn.disabled = true;
+      btn.textContent = "⏳ Descargando…";
+
+      var zip = new JSZip();
+      var cfg = window.PN_SUPABASE_CONFIG;
+      var baseUrl = cfg.SUPABASE_URL + "/storage/v1/object/public/";
+      var errors = 0;
+
+      for (var i = 0; i < allFiles.length; i++) {
+        var entry = allFiles[i];
+        var file = entry.file;
+        var url = baseUrl + (file.storage_bucket || "feedback-files") + "/" + file.file_path;
+        var folderName = "feedback-" + entry.feedbackIdx;
+        var fileName = file.file_name || ("archivo-" + i);
+
+        try {
+          var resp = await fetch(url);
+          if (resp.ok) {
+            var blob = await resp.blob();
+            zip.file(folderName + "/" + fileName, blob);
+          } else {
+            errors++;
+          }
+        } catch(e) {
+          errors++;
+        }
+      }
+
+      var zipBlob = await zip.generateAsync({ type: "blob" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(zipBlob);
+      a.download = "archivos-" + company.slug + ".zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+
+      btn.disabled = false;
+      btn.innerHTML = "🗜️ <span>Descargar archivos</span>";
+
+      if (errors > 0) {
+        alert(errors + " archivo(s) no se pudieron descargar.");
+      }
+    });
+  }
+
+  // ===================================================================
   // EVENTOS
   // ===================================================================
   function bindEvents() {
@@ -995,6 +1210,16 @@
     // Abrir modal desde el detalle
     $("#pn-detail-add-feedback").addEventListener("click", function () {
       openFeedbackModal(state.currentCompany ? state.currentCompany.slug : null);
+    });
+
+    // Descargar feedbacks en Word
+    $("#pn-detail-download").addEventListener("click", function () {
+      downloadFeedbacksDocx();
+    });
+
+    // Descargar archivos adjuntos en ZIP
+    $("#pn-detail-download-files").addEventListener("click", function () {
+      downloadFeedbacksFiles();
     });
 
     // Modal: cerrar
