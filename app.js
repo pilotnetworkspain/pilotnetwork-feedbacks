@@ -1281,6 +1281,8 @@
       if (state.currentCompany) applyFeedbackFilters(); // re-renderiza feedbacks si estamos en el detalle
     };
     await loadCompanies();
+    // Aplicar idioma inicial una vez cargado todo
+    if (typeof window.pnSetLang === 'function') window.pnSetLang(window.pnCurrentLang || 'en');
     if (state._pendingSlug) {
       var slug = state._pendingSlug;
       state._pendingSlug = null;
