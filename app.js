@@ -132,6 +132,7 @@
 
   // Flag para pausar sendHeight cuando el modal está abierto
   var modalIsOpen = false;
+  window.pnCurrentLang = window.pnCurrentLang || 'en';
 
   function formatDate(dateStr) {
     if (!dateStr) return "";
