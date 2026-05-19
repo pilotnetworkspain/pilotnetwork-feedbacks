@@ -952,21 +952,37 @@
   function downloadFeedbacksDocx() {
     var company = state.currentCompany;
     var feedbacks = state.feedbacksFiltered;
+    var lang = window.pnCurrentLang || 'en';
+    var isEn = lang === 'en';
     if (!company || !feedbacks.length) {
-      alert("No hay feedbacks para descargar.");
+      alert(isEn ? "No feedbacks to download." : "No hay feedbacks para descargar.");
       return;
     }
 
-    // Construye el contenido XML del documento Word
+    var LABELS = {
+      subtitle:    isEn ? 'Assessment Feedbacks' : 'Feedbacks de Assessments',
+      catLabel:    getCatLabel(company.category),
+      countLabel:  feedbacks.length + (isEn
+        ? ' feedback' + (feedbacks.length === 1 ? '' : 's') + ' published'
+        : ' feedback' + (feedbacks.length === 1 ? '' : 's') + ' publicado' + (feedbacks.length === 1 ? '' : 's')),
+      generated:   (isEn ? 'Generated: ' : 'Generado: ') + new Date().toLocaleDateString(isEn ? 'en-GB' : 'es-ES'),
+      position:    isEn ? 'Position: '         : 'Posición: ',
+      dateAssess:  isEn ? 'Assessment date: '  : 'Fecha assessment: ',
+      hours:       isEn ? 'Total hours: '      : 'Horas totales: ',
+      postedBy:    isEn ? 'Posted by: '        : 'Publicado por: ',
+      pubDate:     isEn ? 'Publication date: ' : 'Fecha publicación: ',
+      expTitle:    isEn ? 'Flight experience:' : 'Experiencia de vuelo:',
+      fbTitle:     'Feedback:',
+      aircraftTitle: isEn ? 'Aircraft flown:'  : 'Aviones volados:',
+      dateNotSet:  isEn ? 'Date not specified' : 'Fecha no indicada',
+      anon:        isEn ? 'Anonymous'          : 'Anónimo',
+      footer:      'pilotnetwork.es · Assessment Feedbacks',
+    };
+
     function xmlEscape(str) {
       if (!str) return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+      return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
-
     function para(text, opts) {
       opts = opts || {};
       var sz = opts.size || 24;
@@ -983,66 +999,48 @@
         "</w:p>";
       }).join("");
     }
-
     function divider() {
       return "<w:p><w:pPr><w:pBdr><w:bottom w:val=\"single\" w:sz=\"6\" w:space=\"1\" w:color=\"334466\"/></w:pBdr><w:spacing w:after=\"160\"/></w:pPr></w:p>";
     }
 
     var bodyXml = "";
-
-    // Portada
-    bodyXml += para("PILOT NETWORK", { bold: true, size: 40, color: "1a3a6e", align: "center", spaceAfter: 80 });
-    bodyXml += para("Assessment Feedbacks", { bold: true, size: 28, color: "2255aa", align: "center", spaceAfter: 80 });
-    bodyXml += para(company.name, { bold: true, size: 36, color: "000000", align: "center", spaceAfter: 80 });
-    bodyXml += para(getCatLabel(company.category), { size: 22, color: "666666", align: "center", spaceAfter: 80 });
-    bodyXml += para(feedbacks.length + " feedback" + (feedbacks.length === 1 ? "" : "s") + " publicado" + (feedbacks.length === 1 ? "" : "s"), { size: 20, color: "888888", align: "center", spaceAfter: 200 });
-    bodyXml += para("Generado: " + new Date().toLocaleDateString("es-ES"), { size: 18, color: "aaaaaa", align: "center", spaceAfter: 400 });
+    bodyXml += para("PILOT NETWORK",    { bold: true, size: 64, color: "1a3a6e", align: "center", spaceAfter: 80 });
+    bodyXml += para(LABELS.subtitle,    { bold: true, size: 40, color: "2255aa", align: "center", spaceAfter: 80 });
+    bodyXml += para(company.name,       { bold: true, size: 52, color: "000000", align: "center", spaceAfter: 80 });
+    bodyXml += para(LABELS.catLabel,    { size: 24, color: "666666", align: "center", spaceAfter: 80 });
+    bodyXml += para(LABELS.countLabel,  { size: 22, color: "888888", align: "center", spaceAfter: 80 });
+    bodyXml += para(LABELS.generated,   { size: 20, color: "aaaaaa", align: "center", spaceAfter: 400 });
     bodyXml += "<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>";
 
-    // Feedbacks
     feedbacks.forEach(function(f, idx) {
-      bodyXml += para("Feedback #" + (idx + 1), { bold: true, size: 28, color: "1a3a6e", spaceAfter: 80 });
-
-      // Meta
+      bodyXml += para("Feedback #" + (idx + 1), { bold: true, size: 32, color: "1a3a6e", spaceAfter: 80 });
       var pos = getPosLabel(f.position);
       var dateLabel = f.assessment_date
         ? formatDate(f.assessment_date)
-        : (f.assessment_start_date ? formatDate(f.assessment_start_date) + (f.assessment_end_date ? " — " + formatDate(f.assessment_end_date) : "") : "Fecha no indicada");
-
-      bodyXml += para("Posición: " + pos, { size: 20, color: "334466", spaceAfter: 40 });
-      bodyXml += para("Fecha assessment: " + dateLabel, { size: 20, color: "334466", spaceAfter: 40 });
-      if (f.total_flight_hours != null) bodyXml += para("Horas totales: " + f.total_flight_hours + "h", { size: 20, color: "334466", spaceAfter: 40 });
-      bodyXml += para("Publicado por: " + (f.member_name || "Anónimo"), { size: 20, color: "334466", spaceAfter: 40 });
-      bodyXml += para("Fecha publicación: " + formatDate(f.created_at.slice(0,10)), { size: 18, color: "888888", spaceAfter: 120 });
-
-      // Experiencia
+        : (f.assessment_start_date ? formatDate(f.assessment_start_date) + (f.assessment_end_date ? " — " + formatDate(f.assessment_end_date) : "") : LABELS.dateNotSet);
+      bodyXml += para(LABELS.position + pos, { size: 20, color: "334466", spaceAfter: 40 });
+      bodyXml += para(LABELS.dateAssess + dateLabel, { size: 20, color: "334466", spaceAfter: 40 });
+      if (f.total_flight_hours != null) bodyXml += para(LABELS.hours + f.total_flight_hours + "h", { size: 20, color: "334466", spaceAfter: 40 });
+      bodyXml += para(LABELS.postedBy + (f.member_name || LABELS.anon), { size: 20, color: "334466", spaceAfter: 40 });
+      bodyXml += para(LABELS.pubDate + formatDate(f.created_at.slice(0,10)), { size: 18, color: "888888", spaceAfter: 120 });
       if (f.flight_experience_summary) {
-        bodyXml += para("Experiencia de vuelo:", { bold: true, size: 22, color: "000000", spaceAfter: 60 });
+        bodyXml += para(LABELS.expTitle, { bold: true, size: 22, color: "000000", spaceAfter: 60 });
         bodyXml += para(f.flight_experience_summary, { size: 20, color: "333333", spaceAfter: 120 });
       }
-
-      // Feedback
-      bodyXml += para("Feedback:", { bold: true, size: 22, color: "000000", spaceAfter: 60 });
+      bodyXml += para(LABELS.fbTitle, { bold: true, size: 22, color: "000000", spaceAfter: 60 });
       bodyXml += para(f.feedback_text, { size: 20, color: "222222", spaceAfter: 120 });
-
-      // Aviones
       if (f.aircraft_hours && f.aircraft_hours.length) {
-        bodyXml += para("Aviones volados:", { bold: true, size: 22, color: "000000", spaceAfter: 60 });
+        bodyXml += para(LABELS.aircraftTitle, { bold: true, size: 22, color: "000000", spaceAfter: 60 });
         f.aircraft_hours.forEach(function(a) {
           bodyXml += para("  • " + a.aircraft_type + (a.hours != null ? " · " + a.hours + "h" : ""), { size: 20, color: "334466", spaceAfter: 40 });
         });
       }
-
       bodyXml += divider();
-      if (idx < feedbacks.length - 1) {
-        bodyXml += "<w:p><w:pPr><w:spacing w:after=\"160\"/></w:pPr></w:p>";
-      }
+      if (idx < feedbacks.length - 1) bodyXml += "<w:p><w:pPr><w:spacing w:after=\"160\"/></w:pPr></w:p>";
     });
 
-    // Footer
-    bodyXml += para("pilotnetwork.es · Assessment Feedbacks", { size: 16, color: "aaaaaa", align: "center", spaceAfter: 0 });
+    bodyXml += para(LABELS.footer, { size: 16, color: "aaaaaa", align: "center", spaceAfter: 0 });
 
-    // Construye el ZIP con el .docx
     var docXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" ' +
       'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
@@ -1052,10 +1050,14 @@
       '<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>' +
       '</w:body></w:document>';
 
-    // Genera el .docx como blob usando JSZip (cargado dinámicamente)
-    var script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
-    script.onload = function() {
+    function loadJSZip(cb) {
+      if (window.JSZip) return cb();
+      var s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+      s.onload = cb;
+      document.head.appendChild(s);
+    }
+    loadJSZip(function() {
       var zip = new JSZip();
       zip.file("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
       zip.file("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
@@ -1070,12 +1072,7 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
       });
-    };
-    if (!window.JSZip) {
-      document.head.appendChild(script);
-    } else {
-      script.onload();
-    }
+    });
   }
 
   // ===================================================================
@@ -1083,6 +1080,7 @@
   // ===================================================================
   async function downloadFeedbacksFiles() {
     var company = state.currentCompany;
+
     var feedbacks = state.feedbacksFiltered;
     if (!company || !feedbacks.length) {
       alert("No hay feedbacks para descargar.");
