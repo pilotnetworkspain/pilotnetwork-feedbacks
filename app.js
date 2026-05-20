@@ -529,6 +529,8 @@
     }
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
+    // Scroll al top del iframe para que el usuario vea el modal
+    try { window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*"); } catch(e) {}
     sendHeight();
   }
   function closeFeedbackModal() {
