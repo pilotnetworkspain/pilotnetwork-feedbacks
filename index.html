@@ -530,7 +530,7 @@
   function markManaged() { document.documentElement.classList.add('pn-lang-managed'); }
   function applyLang(l, tries) {
     if (l !== 'es' && l !== 'en') return;
-    if (typeof window.pnSetLang === 'function') { try { window.pnSetLang(l); } catch (e) {} }
+    if (typeof window.pnSetLang === 'function') { if (window.pnCurrentLang === l) return; try { window.pnSetLang(l); } catch (e) {} }
     else if (tries > 0) { setTimeout(function () { applyLang(l, tries - 1); }, 100); }
   }
   var params = null;
