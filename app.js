@@ -740,17 +740,19 @@
     var label = btn.querySelector(".pn-feedback-btn-label");
     var spin = btn.querySelector(".pn-feedback-btn-spinner");
 
-    // Validar Turnstile (soft: avisa en consola pero no bloquea si no carga)
+    // Turnstile, ahora de verdad.
+    //
+    // Antes esto era decorativo: se miraba si la casilla estaba marcada EN EL
+    // NAVEGADOR y, si el widget no cargaba, se dejaba pasar. El token no se
+    // enviaba a ningun sitio y nadie lo verificaba. Cloudflare lo avisaba en
+    // su panel: "Siteverify isn't being called". Ahora el token viaja a la
+    // Edge Function, que lo comprueba contra Cloudflare antes de guardar nada.
     var tsResponse = document.querySelector("[name='cf-turnstile-response']");
-    if (!tsResponse || !tsResponse.value) {
-      // Si el widget está visible pero no completado → bloqueamos
-      var tsWidget = document.getElementById("pn-turnstile");
-      if (tsWidget && tsWidget.offsetHeight > 0) {
-        setFormStatus("Por favor, completa la verificación de seguridad.", "error");
-        sendHeight();
-        return;
-      }
-      // Si el widget no cargó (adblocker, etc.) → dejamos pasar
+    var tsToken = tsResponse && tsResponse.value;
+    if (!tsToken) {
+      setFormStatus("Completa la verificacion de seguridad para poder enviar.", "error");
+      sendHeight();
+      return;
     }
 
     var collected = collectFormData();
@@ -761,65 +763,63 @@
       return;
     }
 
-    setFormStatus("Enviando…", "info");
+    setFormStatus("Enviando\u2026", "info");
     btn.disabled = true;
-    label.textContent = "Enviando…";
+    label.textContent = "Enviando\u2026";
     spin.hidden = false;
+
+    function reiniciarTurnstile() {
+      // Los tokens son de un solo uso: si el envio falla hay que pedir otro,
+      // o el segundo intento lo rechaza Cloudflare.
+      try { if (window.turnstile) window.turnstile.reset("#pn-turnstile"); } catch (e) {}
+    }
 
     try {
       var cfg = window.PN_SUPABASE_CONFIG;
-      var feedbackId = generateUUID();
-      collected.feedback.id = feedbackId;
 
-      // 1) Insert feedback
-      var url = cfg.SUPABASE_URL + "/rest/v1/feedbacks";
-      var fbResp = await fetch(url, {
+      // 1) Crear el feedback a traves de la funcion. El id lo devuelve ella:
+      //    ya no se genera en el navegador.
+      var fnUrl = cfg.SUPABASE_URL + "/functions/v1/feedback-submit";
+      var crearResp = await fetch(fnUrl, {
         method: "POST",
         headers: {
           'apikey': cfg.SUPABASE_ANON_KEY,
           'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(collected.feedback)
+        body: JSON.stringify({
+          sitio: "pilot",
+          accion: "crear",
+          turnstile_token: tsToken,
+          feedback: collected.feedback,
+          bloques: collected.aircraft
+        })
       });
-
-      if (!fbResp.ok) {
-        var err = await fbResp.json();
-        throw new Error(err.message || "Error al insertar feedback");
+      var crear = await crearResp.json().catch(function () { return {}; });
+      if (!crearResp.ok || !crear.ok) {
+        reiniciarTurnstile();
+        var mensajes = {
+          turnstile_rechazado: "La verificacion de seguridad no ha pasado. Marca la casilla otra vez.",
+          falta_turnstile: "Falta la verificacion de seguridad.",
+          verificacion_no_configurada: "El envio esta temporalmente desactivado. Intentalo mas tarde.",
+          feedback_demasiado_corto: "El feedback es demasiado corto.",
+          empresa_inexistente: "Esa compania ya no existe. Recarga la pagina.",
+          correo_invalido: "El correo no parece valido."
+        };
+        throw new Error(mensajes[crear.error] || "No se ha podido enviar el feedback.");
       }
+      var feedbackId = crear.id;
 
-      // 2) Insert aircraft_hours
-      if (collected.aircraft.length) {
-        var rows = collected.aircraft.map(function (a) {
-          return Object.assign({ feedback_id: feedbackId }, a);
-        });
-        var ahUrl = cfg.SUPABASE_URL + "/rest/v1/aircraft_hours";
-        var ahResp = await fetch(ahUrl, {
-          method: "POST",
-          headers: {
-            'apikey': cfg.SUPABASE_ANON_KEY,
-            'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify(rows)
-        });
-        if (!ahResp.ok) {
-          var ahErr = await ahResp.json();
-          throw new Error(ahErr.message || "Error al insertar aircraft_hours");
-        }
-      }
-
-      // 3) Subir archivos a Supabase Storage + registrar en feedback_files
+      // 2) Archivos: se suben al bucket y luego se registran por la funcion,
+      //    que comprueba que la ruta cuelga de este feedback y que es reciente.
       if (selectedFiles.length) {
-        setFormStatus("Subiendo archivos…", "info");
+        setFormStatus("Subiendo archivos\u2026", "info");
+        var subidos = [];
         for (var fi = 0; fi < selectedFiles.length; fi++) {
           var sf = selectedFiles[fi];
           if (sf.error) continue;
           var cleanName = sanitizeFilename(sf.file.name);
           var filePath = feedbackId + "/" + Date.now() + "_" + cleanName;
-          // Upload al bucket via REST
           var uploadUrl = cfg.SUPABASE_URL + "/storage/v1/object/" + cfg.STORAGE_BUCKET + "/" + filePath;
           var uploadResp = await fetch(uploadUrl, {
             method: "POST",
@@ -832,33 +832,36 @@
             body: sf.file
           });
           if (!uploadResp.ok) {
-            var upErr = await uploadResp.json().catch(function(){return {};});
-            console.warn("[pn-feedback] file upload warn:", upErr.message || uploadResp.status);
-            continue; // no bloqueamos el feedback si falla un archivo
+            console.warn("[pn-feedback] no se pudo subir un archivo:", uploadResp.status);
+            continue; // un archivo suelto no tumba el feedback
           }
-          // Registrar en feedback_files
-          var ffUrl = cfg.SUPABASE_URL + "/rest/v1/feedback_files";
-          await fetch(ffUrl, {
+          subidos.push({
+            file_name: sf.file.name,
+            file_path: filePath,
+            file_size: sf.file.size,
+            file_type: sf.file.type || 'application/octet-stream',
+            storage_bucket: cfg.STORAGE_BUCKET
+          });
+        }
+        if (subidos.length) {
+          await fetch(fnUrl, {
             method: "POST",
             headers: {
               'apikey': cfg.SUPABASE_ANON_KEY,
               'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=minimal'
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              feedback_id: feedbackId,
-              file_name: sf.file.name,
-              file_path: filePath,
-              file_size: sf.file.size,
-              file_type: sf.file.type || 'application/octet-stream',
-              storage_bucket: cfg.STORAGE_BUCKET
+              sitio: "pilot",
+              accion: "registrar-ficheros",
+              id: feedbackId,
+              ficheros: subidos
             })
           });
         }
       }
 
-      // 4) Éxito
+      // 3) Exito
       $("#pn-feedback-form").hidden = true;
       $("#pn-form-success").hidden = false;
       sendHeight();
