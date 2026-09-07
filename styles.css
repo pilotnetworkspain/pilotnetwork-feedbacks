@@ -559,51 +559,144 @@ html, body {
 .pn-feedback-checkbox input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--pn-blue); }
 .pn-feedback-checkbox strong { color: #fff; }
 
-/* Botones descarga premium */
-.pn-btn-download-word,
-.pn-btn-download-zip {
+/* ===================================================================
+   BOTONES DE DESCARGA  (Word · PDF · Archivos)
+   -------------------------------------------------------------------
+   Son tres y comparten todo menos el color. Antes eran dos y cada uno
+   repetia sus propias reglas; al aparecer el de PDF se agrupo en
+   .pn-btn-descarga para no tener que tocar tres sitios cada vez.
+
+   ESTADO BLOQUEADO (.esta-bloqueado). Al pulsar no se descarga nada:
+   el icono se convierte en un candado y una luz barre el boton de
+   DERECHA A IZQUIERDA. Es un aviso, no una cerradura: lo que de verdad
+   decide quien puede descargar tiene que estar en la base de datos
+   (ver docs/SEGURIDAD.md, hallazgo S-10). Aqui solo se ve.
+   =================================================================== */
+.pn-btn-descarga {
   display: inline-flex; align-items: center; gap: 9px;
   min-height: 44px; padding: 10px 20px; border-radius: 12px;
   font-family: inherit; font-size: 13px; font-weight: 800; letter-spacing: .3px;
   border: none; cursor: pointer; white-space: nowrap;
-  position: relative; overflow: hidden;
+  position: relative; overflow: hidden; isolation: isolate;
+  color: #fff;
   transition: transform .22s cubic-bezier(.2,1.4,.4,1), box-shadow .22s ease, filter .22s ease;
 }
 .pn-btn-download-word {
   background: linear-gradient(145deg, #2563eb, #1d4ed8, #1e3a8a);
-  color: #fff;
   box-shadow: 0 4px 16px rgba(37,99,235,.45), inset 0 1px 0 rgba(255,255,255,.15);
+}
+.pn-btn-download-pdf {
+  background: linear-gradient(145deg, #e11d48, #be123c, #831843);
+  box-shadow: 0 4px 16px rgba(225,29,72,.45), inset 0 1px 0 rgba(255,255,255,.15);
 }
 .pn-btn-download-zip {
   background: linear-gradient(145deg, #d97706, #b45309, #92400e);
-  color: #fff;
   box-shadow: 0 4px 16px rgba(217,119,6,.45), inset 0 1px 0 rgba(255,255,255,.15);
 }
-/* Shimmer effect */
-.pn-btn-download-word::after,
-.pn-btn-download-zip::after {
+
+/* Los tres, en fila y con hueco. En movil bajan solos. */
+.pn-detail-descargas { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* --- Reflejo suave al pasar por encima (izquierda a derecha) --- */
+.pn-btn-descarga::after {
   content: "";
   position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
   transition: left .5s ease;
+  pointer-events: none; z-index: 1;
+}
+.pn-btn-descarga:hover::after { left: 150%; }
+.pn-btn-descarga:hover {
+  transform: translateY(-3px) scale(1.04);
+  filter: saturate(1.08);
+}
+.pn-btn-download-word:hover { box-shadow: 0 10px 28px rgba(37,99,235,.6),  inset 0 1px 0 rgba(255,255,255,.2); }
+.pn-btn-download-pdf:hover  { box-shadow: 0 10px 28px rgba(225,29,72,.6),  inset 0 1px 0 rgba(255,255,255,.2); }
+.pn-btn-download-zip:hover  { box-shadow: 0 10px 28px rgba(217,119,6,.6),  inset 0 1px 0 rgba(255,255,255,.2); }
+.pn-btn-descarga:active { transform: translateY(0) scale(.97); }
+.pn-btn-descarga:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.pn-btn-descarga:focus-visible {
+  outline: 2px solid #fff; outline-offset: 3px;
+}
+
+/* --- Los dos iconos ocupan la misma casilla, asi el boton no salta --- */
+.pn-ico-caja { position: relative; flex: 0 0 20px; width: 20px; height: 20px; display: block; }
+.pn-ico {
+  position: absolute; inset: 0;
+  transition: opacity .18s ease, transform .34s cubic-bezier(.2,1.5,.4,1);
+}
+.pn-ico-candado { opacity: 0; transform: scale(.35) rotate(-14deg); }
+.pn-btn-descarga.esta-bloqueado .pn-ico-accion  { opacity: 0; transform: scale(.35) rotate(10deg); }
+.pn-btn-descarga.esta-bloqueado .pn-ico-candado { opacity: 1; transform: none; }
+
+/* --- El barrido de luz: entra por la derecha y sale por la izquierda --- */
+@keyframes pnBarridoCandado {
+  0%   { transform: translateX(150%) skewX(-18deg); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(-260%) skewX(-18deg); opacity: 0; }
+}
+.pn-btn-descarga::before {
+  content: "";
+  position: absolute; top: -50%; bottom: -50%; right: 0; width: 55%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent);
+  transform: translateX(150%) skewX(-18deg);
+  opacity: 0; pointer-events: none; z-index: 2;
+}
+.pn-btn-descarga.esta-bloqueado::before { animation: pnBarridoCandado .9s cubic-bezier(.4,0,.2,1); }
+.pn-btn-descarga.esta-bloqueado {
+  filter: saturate(.55) brightness(.92);
+  box-shadow: 0 2px 10px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.22);
+}
+
+/* Quien pide menos movimiento no ve el barrido, pero si el candado. */
+@media (prefers-reduced-motion: reduce) {
+  .pn-btn-descarga.esta-bloqueado::before { animation: none; }
+  .pn-btn-descarga, .pn-ico { transition: none; }
+}
+
+/* ===================================================================
+   MURO DE REGISTRO
+   =================================================================== */
+.pn-muro-card { max-width: 460px; text-align: center; }
+.pn-muro-candado {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 58px; height: 58px; margin: 4px auto 14px; border-radius: 18px;
+  color: #9DB4FF;
+  background: rgba(110,168,255,.10);
+  border: 1px solid rgba(110,168,255,.28);
+}
+.pn-muro-card h2 { margin: 0 0 10px; font-size: 21px; font-weight: 950; letter-spacing: -.5px; }
+.pn-muro-texto { margin: 0 0 20px; color: var(--pn-soft); font-size: 14.5px; line-height: 1.6; }
+.pn-muro-acciones { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.pn-muro-cta { justify-content: center; }
+.pn-muro-cta[hidden], .pn-muro-pronto[hidden] { display: none; }
+.pn-muro-pronto {
+  margin: 0; padding: 12px 14px; border-radius: 12px;
+  background: rgba(255,177,82,.07); border: 1px solid rgba(255,177,82,.2);
+  color: var(--pn-soft); font-size: 13.5px; line-height: 1.5;
+}
+.pn-muro-cerrar { background: transparent; border: 1px solid rgba(255,255,255,.16); color: var(--pn-soft); justify-content: center; }
+.pn-muro-cerrar:hover { background: rgba(255,255,255,.06); }
+.pn-muro-pie { margin: 14px 0 0; font-size: 12.5px; color: var(--pn-muted); }
+
+/* --- El aviso que sustituye al feedback numero 6 en adelante --- */
+.pn-tope {
+  position: relative; margin-top: 14px; padding: 26px 22px;
+  border-radius: 16px; text-align: center;
+  background: rgba(110,168,255,.06);
+  border: 1px solid rgba(110,168,255,.22);
+}
+.pn-tope::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -78px; height: 78px;
+  background: linear-gradient(180deg, rgba(2,4,10,0), rgba(2,4,10,.92));
   pointer-events: none;
 }
-.pn-btn-download-word:hover::after,
-.pn-btn-download-zip:hover::after { left: 150%; }
-.pn-btn-download-word:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 10px 28px rgba(37,99,235,.6), inset 0 1px 0 rgba(255,255,255,.2);
-}
-.pn-btn-download-zip:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 10px 28px rgba(217,119,6,.6), inset 0 1px 0 rgba(255,255,255,.2);
-}
-.pn-btn-download-word:active, .pn-btn-download-zip:active {
-  transform: translateY(0) scale(.97);
-}
-.pn-btn-download-word:disabled, .pn-btn-download-zip:disabled {
-  opacity: .6; cursor: not-allowed; transform: none;
-}
+.pn-tope-candado { display: inline-flex; color: #9DB4FF; margin-bottom: 10px; }
+.pn-tope h4 { margin: 0 0 8px; font-size: 17px; font-weight: 900; letter-spacing: -.3px; color: #fff; }
+.pn-tope p  { max-width: 52ch; margin: 0 auto 18px; color: var(--pn-soft); font-size: 14px; line-height: 1.6; }
+.pn-tope-cuantos { font-weight: 800; color: #9DB4FF; }
+
 .pn-anon-toggle { background: rgba(110,168,255,.07); border: 1px solid rgba(110,168,255,.2); border-radius: 8px; padding: 8px 12px !important; font-size: 13px !important; color: var(--pn-blue2, #9DB4FF) !important; transition: background .2s; }
 .pn-anon-toggle:hover { background: rgba(110,168,255,.14); }
 .pn-anon-toggle input { accent-color: var(--pn-blue); }

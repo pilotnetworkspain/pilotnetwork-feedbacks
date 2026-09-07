@@ -135,22 +135,56 @@
           <button class="pn-feedback-btn pn-feedback-btn-primary" id="pn-detail-add-feedback" type="button">
             <span id="pn-lang-add-feedback">+ Post feedback</span>
           </button>
-          <button class="pn-btn-download-word" id="pn-detail-download" type="button">
-            <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="32" height="32" rx="6" fill="rgba(255,255,255,0.15)"/>
-              <path d="M16 7v13M16 20l-4.5-4.5M16 20l4.5-4.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <rect x="7" y="23" width="18" height="2.5" rx="1.25" fill="white"/>
-            </svg>
-            <span id="pn-lang-download">Download Word</span>
-          </button>
-          <button class="pn-btn-download-zip" id="pn-detail-download-files" type="button">
-            <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="32" height="32" rx="6" fill="rgba(255,255,255,0.15)"/>
-              <path d="M16 7v13M16 20l-4.5-4.5M16 20l4.5-4.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <rect x="7" y="23" width="18" height="2.5" rx="1.25" fill="white"/>
-            </svg>
-            <span id="pn-lang-download-files">Download files</span>
-          </button>
+          <div class="pn-detail-descargas">
+            <button class="pn-btn-descarga pn-btn-download-word" id="pn-detail-download" type="button">
+              <span class="pn-ico-caja">
+                <svg class="pn-ico pn-ico-accion" width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect width="32" height="32" rx="6" fill="rgba(255,255,255,0.15)"/>
+                  <path d="M16 7v13M16 20l-4.5-4.5M16 20l4.5-4.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="7" y="23" width="18" height="2.5" rx="1.25" fill="white"/>
+                </svg>
+                <svg class="pn-ico pn-ico-candado" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                  <rect x="4.6" y="10.3" width="14.8" height="10.4" rx="3.1" fill="currentColor"/>
+                  <circle cx="12" cy="14.6" r="1.4" fill="rgba(0,0,0,.55)"/>
+                  <rect x="11.25" y="15" width="1.5" height="3.1" rx=".75" fill="rgba(0,0,0,.55)"/>
+                </svg>
+              </span>
+              <span class="pn-txt"><span id="pn-lang-download">Download Word</span></span>
+            </button>
+            <button class="pn-btn-descarga pn-btn-download-pdf" id="pn-detail-download-pdf" type="button">
+              <span class="pn-ico-caja">
+                <svg class="pn-ico pn-ico-accion" width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M8 4h11l6 6v18a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" fill="rgba(255,255,255,.16)"/>
+                  <path d="M19 4v6h6" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+                  <path d="M11 17h10M11 21h7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <svg class="pn-ico pn-ico-candado" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                  <rect x="4.6" y="10.3" width="14.8" height="10.4" rx="3.1" fill="currentColor"/>
+                  <circle cx="12" cy="14.6" r="1.4" fill="rgba(0,0,0,.55)"/>
+                  <rect x="11.25" y="15" width="1.5" height="3.1" rx=".75" fill="rgba(0,0,0,.55)"/>
+                </svg>
+              </span>
+              <span class="pn-txt"><span id="pn-lang-download-pdf">Download PDF</span></span>
+            </button>
+            <button class="pn-btn-descarga pn-btn-download-zip" id="pn-detail-download-files" type="button">
+              <span class="pn-ico-caja">
+                <svg class="pn-ico pn-ico-accion" width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect width="32" height="32" rx="6" fill="rgba(255,255,255,0.15)"/>
+                  <path d="M16 7v13M16 20l-4.5-4.5M16 20l4.5-4.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="7" y="23" width="18" height="2.5" rx="1.25" fill="white"/>
+                </svg>
+                <svg class="pn-ico pn-ico-candado" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                  <rect x="4.6" y="10.3" width="14.8" height="10.4" rx="3.1" fill="currentColor"/>
+                  <circle cx="12" cy="14.6" r="1.4" fill="rgba(0,0,0,.55)"/>
+                  <rect x="11.25" y="15" width="1.5" height="3.1" rx=".75" fill="rgba(0,0,0,.55)"/>
+                </svg>
+              </span>
+              <span class="pn-txt"><span id="pn-lang-download-files">Download files</span></span>
+            </button>
+          </div>
         </header>
         
         <div class="pn-feedback-detail-filters">
@@ -311,6 +345,40 @@
     </div>
   </div>
 
+  <!-- ============================================================
+       MURO DE REGISTRO
+       Sale al pulsar cualquiera de las tres descargas y al llegar al
+       tope de feedbacks visibles sin cuenta. No es un <dialog>: dentro
+       de un iframe, showModal() se recorta al alto del iframe. Se usa
+       el mismo patron que el modal de publicar feedback, que ya
+       funciona aqui dentro (overlay + aviso de scroll al padre).
+       ============================================================ -->
+  <div class="pn-feedback-modal pn-muro-modal" id="pn-lock-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="pn-lock-title">
+    <div class="pn-feedback-modal-overlay" data-close-lock="1"></div>
+    <div class="pn-feedback-modal-card pn-muro-card" role="document">
+      <button class="pn-feedback-modal-close" type="button" data-close-lock="1" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <span class="pn-muro-candado" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <rect x="4.6" y="10.3" width="14.8" height="10.4" rx="3.1" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="15.2" r="1.5" fill="currentColor"/>
+        </svg>
+      </span>
+      <h2 id="pn-lock-title"><span id="pn-lang-lock-title">This opens with a free account</span></h2>
+      <p class="pn-muro-texto" id="pn-lang-lock-text">Feedbacks are written by pilots who went through the process. We ask for an account so they are not downloaded in bulk and passed around out of context.</p>
+      <div class="pn-muro-acciones">
+        <a class="pn-feedback-btn pn-feedback-btn-primary pn-muro-cta" id="pn-lock-cta" href="#" target="_top" rel="noopener" hidden><span id="pn-lang-lock-cta">Create a free account</span></a>
+        <p class="pn-muro-pronto" id="pn-lang-lock-soon" hidden>Registration opens shortly. Meanwhile you can keep reading the most recent feedbacks.</p>
+        <button class="pn-feedback-btn pn-muro-cerrar" type="button" data-close-lock="1"><span id="pn-lang-lock-close">Not now</span></button>
+      </div>
+      <p class="pn-muro-pie" id="pn-lang-lock-free">Free, no ads, no cost.</p>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="app.js"></script>
@@ -328,6 +396,13 @@
       'back':            'Volver a compañías',
       'add-feedback':    '+ Publicar feedback',
       'download-word':   'Descargar Word',
+      'download-pdf':    'Descargar PDF',
+      'lock-title':      'Esto se abre con cuenta gratuita',
+      'lock-text':       'Los feedbacks los escriben pilotos que han pasado el proceso. Pedimos cuenta para que no se descarguen en bloque y acaben circulando fuera de contexto.',
+      'lock-cta':        'Crear cuenta gratis',
+      'lock-soon':       'El registro abre en breve. Mientras tanto puedes seguir leyendo los feedbacks más recientes.',
+      'lock-close':      'Ahora no',
+      'lock-free':       'Gratis, sin publicidad y sin coste.',
       'download-files':  'Descargar archivos',
       'from':            'Desde',
       'to':              'Hasta',
@@ -392,6 +467,13 @@
       'back':            'Back to companies',
       'add-feedback':    '+ Post feedback',
       'download-word':   'Download Word',
+      'download-pdf':    'Download PDF',
+      'lock-title':      'This opens with a free account',
+      'lock-text':       'Feedbacks are written by pilots who went through the process. We ask for an account so they are not downloaded in bulk and passed around out of context.',
+      'lock-cta':        'Create a free account',
+      'lock-soon':       'Registration opens shortly. Meanwhile you can keep reading the most recent feedbacks.',
+      'lock-close':      'Not now',
+      'lock-free':       'Free, no ads, no cost.',
       'download-files':  'Download files',
       'from':            'From',
       'to':              'To',
@@ -471,6 +553,13 @@
       'pn-lang-back':      c['back'],
       'pn-lang-add-feedback': c['add-feedback'],
       'pn-lang-download':     c['download-word'],
+      'pn-lang-download-pdf': c['download-pdf'],
+      'pn-lang-lock-title':   c['lock-title'],
+      'pn-lang-lock-text':    c['lock-text'],
+      'pn-lang-lock-cta':     c['lock-cta'],
+      'pn-lang-lock-soon':    c['lock-soon'],
+      'pn-lang-lock-close':   c['lock-close'],
+      'pn-lang-lock-free':    c['lock-free'],
       'pn-lang-download-files': c['download-files'],
       'pn-lang-from':      c['from'],
       'pn-lang-to':        c['to'],

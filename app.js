@@ -21,6 +21,44 @@
   //   auth: { persistSession: false, autoRefreshToken: false }
   // });
 
+  // ===================================================================
+  // MURO: QUE SE VE SIN CUENTA
+  // -------------------------------------------------------------------
+  // Los tres interruptores de abajo son lo unico que hay que tocar el
+  // dia que el registro este abierto. Estan juntos a proposito: si
+  // estuvieran repartidos por el fichero, abrir el grifo seria buscar
+  // por medio codigo y algo se quedaria cerrado.
+  //
+  // LO QUE ESTO ES Y LO QUE NO ES. Esto tapa lo que se VE: los botones
+  // no descargan y del sexto feedback en adelante sale un aviso en vez
+  // del texto. No es una cerradura. Quien abra las herramientas del
+  // navegador encuentra la clave publica en supabase-config.js y puede
+  // pedirle los feedbacks a la base de datos por su cuenta. Cerrar eso
+  // de verdad es cambiar los permisos en Supabase (RLS), y eso apaga
+  // tambien esta pagina publica mientras no haya cuentas. Esta escrito
+  // en docs/SEGURIDAD.md del repo pilotnetwork-web, hallazgo S-10.
+  //
+  // Asi que: esto frena la copia comoda, la del que pulsa un boton. No
+  // frena a quien sabe lo que hace. Y esa es exactamente la diferencia
+  // que hay que tener clara antes de decir que los feedbacks "estan
+  // protegidos".
+  // ===================================================================
+
+  /** Con false, los tres botones de descarga avisan en vez de descargar. */
+  var DESCARGAS_ABIERTAS = false;
+
+  /** Cuantos feedbacks se leen enteros sin cuenta. Del 6 en adelante, aviso. */
+  var TOPE_SIN_CUENTA = 5;
+
+  /**
+   * A donde lleva "Crear cuenta gratis".
+   * Vacio = todavia no hay registro: el muro sale igual, pero en vez de
+   * un boton que no lleva a ningun sitio muestra "abre en breve".
+   * Cuando la web nueva este publica, aqui va su direccion. Ejemplo:
+   *   var URL_CUENTA = "https://www.pilotnetwork.es/cuenta/entrar";
+   */
+  var URL_CUENTA = "";
+
   // ------- Estado global -------
   var state = {
     companies: [],          // lista completa
@@ -122,6 +160,12 @@
     'anonymous':         { es: 'Anónimo',            en: 'Anonymous' },
     'published-on':      { es: 'Publicado',          en: 'Published' },
     'total-hours':       { es: 'h totales',          en: 'h total' },
+    // --- Muro tras el quinto feedback ---
+    'tope-title-1':      { es: 'Queda 1 feedback más de esta compañía',  en: '1 more feedback for this airline' },
+    'tope-title-n':      { es: 'Quedan {n} feedbacks más de esta compañía', en: '{n} more feedbacks for this airline' },
+    'tope-text':         { es: 'Los escriben pilotos que ya han pasado el proceso. Se leen con una cuenta gratuita, y así no acaban descargados en bloque y repartidos fuera de contexto.',
+                           en: 'They are written by pilots who already went through the process. A free account opens them, and that is what stops them being bulk-downloaded and passed around out of context.' },
+    'tope-cta':          { es: 'Ver los que faltan',      en: 'See the rest' },
   };
   function t(key) {
     var lang = window.pnCurrentLang || 'es';
@@ -404,7 +448,20 @@
       sendHeight();
       return;
     }
-    cont.innerHTML = state.feedbacksFiltered.map(function (f) {
+    // El muro: solo se pintan los TOPE_SIN_CUENTA primeros. La lista ya
+    // viene ordenada por fecha descendente desde la consulta
+    // (order=created_at.desc), asi que estos son los mas recientes, que
+    // es lo que pidio Cesar. Los demas no se pintan; en su sitio va un
+    // aviso. Ojo: NO se borran de state.feedbacksFiltered, porque los
+    // filtros de posicion y fecha siguen trabajando sobre la lista
+    // entera y el contador tiene que poder decir cuantos faltan.
+    var visibles = state.feedbacksFiltered;
+    var ocultos = 0;
+    if (!DESCARGAS_ABIERTAS && visibles.length > TOPE_SIN_CUENTA) {
+      ocultos = visibles.length - TOPE_SIN_CUENTA;
+      visibles = visibles.slice(0, TOPE_SIN_CUENTA);
+    }
+    cont.innerHTML = visibles.map(function (f) {
       var dateLabel = f.assessment_date
         ? formatDate(f.assessment_date)
         : (f.assessment_start_date && f.assessment_end_date
@@ -489,7 +546,9 @@
         aircraftHtml+
         filesHtml+
       '</article>';
-    }).join("");
+    }).join("") + (ocultos ? avisoDelTope(ocultos) : "");
+    var botonTope = cont.querySelector("[data-abrir-muro]");
+    if (botonTope) botonTope.addEventListener("click", function () { abrirMuro(); });
     sendHeight();
     // Scroll al padre para que vea el inicio de la compañía
     requestAnimationFrame(function() {
@@ -498,6 +557,95 @@
       var offset = detail.getBoundingClientRect().top + (window.pageYOffset || 0);
       try { window.parent.postMessage({ type: "pn-feedback-scroll-to", offset: Math.max(0, offset - 16) }, "*"); } catch(e) {}
     });
+  }
+
+  /**
+   * El cartel que sustituye al feedback numero 6 en adelante.
+   *
+   * Dice cuantos faltan. Un muro que solo dice "registrate" se cierra;
+   * uno que dice "quedan 14" da una razon concreta para hacerlo. Y el
+   * numero es el de verdad, no uno inventado para animar.
+   */
+  function avisoDelTope(cuantos) {
+    var titulo = cuantos === 1
+      ? t('tope-title-1')
+      : t('tope-title-n').replace('{n}', '<span class="pn-tope-cuantos">' + cuantos + '</span>');
+    return '<div class="pn-tope">' +
+      '<span class="pn-tope-candado" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" width="26" height="26" fill="none">' +
+          '<path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+          '<rect x="4.6" y="10.3" width="14.8" height="10.4" rx="3.1" stroke="currentColor" stroke-width="2"/>' +
+          '<circle cx="12" cy="15.2" r="1.5" fill="currentColor"/>' +
+        '</svg>' +
+      '</span>' +
+      // titulo lleva HTML a proposito (el <span> del numero); el resto
+      // del cartel es texto fijo del diccionario, nada que venga de la
+      // base de datos, asi que no hay nada de nadie que escapar aqui.
+      '<h4>' + titulo + '</h4>' +
+      '<p>' + escapeHtml(t('tope-text')) + '</p>' +
+      '<button class="pn-feedback-btn pn-feedback-btn-primary" type="button" data-abrir-muro="1">' +
+        escapeHtml(t('tope-cta')) +
+      '</button>' +
+    '</div>';
+  }
+
+  // ===================================================================
+  // MURO DE REGISTRO
+  // ===================================================================
+  function abrirMuro() {
+    var m = $("#pn-lock-modal");
+    if (!m) return;
+    var hayRegistro = !!URL_CUENTA;
+    var cta = $("#pn-lock-cta");
+    var pronto = $("#pn-lang-lock-soon");
+    if (cta)    { cta.href = URL_CUENTA || "#"; cta.hidden = !hayRegistro; }
+    if (pronto) { pronto.hidden = hayRegistro; }
+    // "Gratis, sin publicidad" solo tiene sentido si hay algo que crear.
+    var pie = $(".pn-muro-pie");
+    if (pie) pie.hidden = !hayRegistro;
+    m.hidden = false;
+    m.setAttribute("aria-hidden", "false");
+    modalIsOpen = true;
+    // Como el modal esta dentro del iframe, si el padre esta scrolleado
+    // hacia abajo el cartel queda fuera de la pantalla. Se le pide al
+    // padre que suba, igual que hace el modal de publicar feedback.
+    try { window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*"); } catch (e) {}
+    var cerrar = m.querySelector(".pn-muro-cerrar");
+    if (cerrar) cerrar.focus();
+    sendHeight();
+  }
+
+  function cerrarMuro() {
+    var m = $("#pn-lock-modal");
+    if (!m) return;
+    m.hidden = true;
+    m.setAttribute("aria-hidden", "true");
+    modalIsOpen = false;
+    sendHeight();
+  }
+
+  /**
+   * Lo que pasa al pulsar una descarga cuando estan cerradas.
+   *
+   * El candado y el barrido de luz los pone el CSS; aqui solo se pone y
+   * se quita la clase. La clase se quita al terminar la animacion para
+   * que el efecto vuelva a salir la siguiente vez que pulse: si se
+   * quedara puesta, el segundo toque no haria nada visible y pareceria
+   * que el boton se ha roto.
+   */
+  function avisarBloqueado(btn) {
+    if (!btn) return;
+    btn.classList.remove("esta-bloqueado");
+    void btn.offsetWidth;               // reinicia la animacion
+    btn.classList.add("esta-bloqueado");
+    btn.setAttribute("aria-disabled", "true");
+    window.setTimeout(function () {
+      btn.classList.remove("esta-bloqueado");
+      btn.removeAttribute("aria-disabled");
+    }, 1100);
+    // El cartel entra cuando la luz ya ha barrido: si sale a la vez, no
+    // da tiempo a ver el candado y parece que el boton no ha hecho nada.
+    window.setTimeout(abrirMuro, 420);
   }
 
   // ===================================================================
@@ -944,6 +1092,12 @@
   // DESCARGA FEEDBACKS EN WORD (.docx)
   // ===================================================================
   function downloadFeedbacksDocx() {
+    // Cinturon y tirantes. El boton ya avisa antes de llegar aqui, pero
+    // esta funcion tambien se puede llamar desde la consola o desde un
+    // futuro boton que alguien conecte sin acordarse del muro. Que la
+    // condicion viva DENTRO de la funcion es lo que hace que no haya
+    // dos sitios donde acordarse.
+    if (!DESCARGAS_ABIERTAS) { abrirMuro(); return; }
     var company = state.currentCompany;
     var feedbacks = state.feedbacksFiltered;
     var lang = window.pnCurrentLang || 'en';
@@ -1072,7 +1226,157 @@
   // ===================================================================
   // DESCARGA ARCHIVOS ADJUNTOS EN ZIP
   // ===================================================================
+  /**
+   * Los mismos feedbacks, en PDF.
+   *
+   * POR QUE EXISTE SI EL BOTON ESTA BLOQUEADO. Porque el dia que se
+   * abran las descargas tiene que funcionar sin escribirla con prisa.
+   * Un boton que existe pero no hace nada por dentro es peor que no
+   * tener boton: se descubre el hueco justo cuando ya esta publicado.
+   *
+   * POR QUE jsPDF Y NO IMPRIMIR LA PAGINA. window.print() dentro de un
+   * iframe imprime la web entera del padre, con su menu y su pie. Y
+   * "guardar como PDF" depende del navegador de cada uno. jsPDF da
+   * siempre el mismo documento, se llame desde donde se llame. Se carga
+   * solo cuando hace falta, igual que JSZip para el Word: quien no
+   * descarga nada no se traga la libreria.
+   */
+  function downloadFeedbacksPdf() {
+    if (!DESCARGAS_ABIERTAS) { abrirMuro(); return; }
+
+    var company = state.currentCompany;
+    var feedbacks = state.feedbacksFiltered;
+    var isEn = (window.pnCurrentLang || 'en') === 'en';
+    if (!company || !feedbacks.length) {
+      alert(isEn ? "No feedbacks to download." : "No hay feedbacks para descargar.");
+      return;
+    }
+
+    var L = {
+      subtitle:   isEn ? 'Assessment Feedbacks' : 'Feedbacks de Assessments',
+      generated:  (isEn ? 'Generated: ' : 'Generado: ') + new Date().toLocaleDateString(isEn ? 'en-GB' : 'es-ES'),
+      hours:      isEn ? 'Total hours: '      : 'Horas totales: ',
+      postedBy:   isEn ? 'Posted by: '        : 'Publicado por: ',
+      pubDate:    isEn ? 'Published: '        : 'Publicado: ',
+      expTitle:   isEn ? 'Flight experience'  : 'Experiencia de vuelo',
+      fbTitle:    'Feedback',
+      acTitle:    isEn ? 'Aircraft flown'     : 'Aviones volados',
+      dateNotSet: isEn ? 'Date not specified' : 'Fecha no indicada',
+      anon:       isEn ? 'Anonymous'          : 'Anónimo',
+      page:       isEn ? 'Page '              : 'Página ',
+      footer:     'pilotnetwork.es · Assessment Feedbacks'
+    };
+
+    function cargarJsPDF(cb) {
+      if (window.jspdf && window.jspdf.jsPDF) return cb();
+      var sc = document.createElement("script");
+      sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+      sc.onload = cb;
+      sc.onerror = function () {
+        alert(isEn ? "The PDF library could not be loaded." : "No se ha podido cargar la librería del PDF.");
+      };
+      document.head.appendChild(sc);
+    }
+
+    cargarJsPDF(function () {
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF({ unit: "mm", format: "a4" });
+
+      var ANCHO = 210, ALTO = 297, MARGEN = 18;
+      var UTIL = ANCHO - MARGEN * 2;
+      var y = 0;
+
+      // --- Cabecera de la primera pagina ---
+      doc.setFillColor(11, 16, 32);
+      doc.rect(0, 0, ANCHO, 42, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+      doc.text(String(company.name || ""), MARGEN, 20);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5);
+      doc.setTextColor(157, 180, 255);
+      doc.text(L.subtitle + "  ·  " + getCatLabel(company.category), MARGEN, 28);
+      doc.setTextColor(150, 160, 180); doc.setFontSize(9);
+      doc.text(L.generated + "   ·   " + feedbacks.length + " feedback" + (feedbacks.length === 1 ? "" : "s"), MARGEN, 35);
+      y = 54;
+
+      function pieDePagina() {
+        doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+        doc.setTextColor(170, 175, 185);
+        doc.text(L.footer, MARGEN, ALTO - 10);
+        doc.text(L.page + doc.internal.getNumberOfPages(), ANCHO - MARGEN, ALTO - 10, { align: "right" });
+      }
+
+      /** Reserva alto; si no cabe, pasa de pagina. Devuelve la y buena. */
+      function sitio(alto) {
+        if (y + alto <= ALTO - 20) return y;
+        pieDePagina();
+        doc.addPage();
+        y = MARGEN + 4;
+        return y;
+      }
+
+      function parrafo(texto, opts) {
+        opts = opts || {};
+        var tam = opts.size || 10;
+        var interlinea = tam * 0.52;
+        doc.setFont("helvetica", opts.bold ? "bold" : "normal");
+        doc.setFontSize(tam);
+        var c = opts.color || [40, 45, 58];
+        doc.setTextColor(c[0], c[1], c[2]);
+        var lineas = doc.splitTextToSize(String(texto == null ? "" : texto), UTIL);
+        for (var i = 0; i < lineas.length; i++) {
+          y = sitio(interlinea + 1);
+          doc.text(lineas[i], MARGEN, y);
+          y += interlinea + 1;
+        }
+        y += (opts.after == null ? 2 : opts.after);
+      }
+
+      feedbacks.forEach(function (f, idx) {
+        var fecha = f.assessment_date
+          ? formatDate(f.assessment_date)
+          : (f.assessment_start_date && f.assessment_end_date
+              ? formatDate(f.assessment_start_date) + " — " + formatDate(f.assessment_end_date)
+              : (f.assessment_start_date ? formatDate(f.assessment_start_date) : L.dateNotSet));
+        var autor = (!f.member_name || f.member_name === 'Anónimo' || f.member_name === 'Anonymous')
+          ? L.anon : f.member_name;
+
+        y = sitio(26);
+        doc.setDrawColor(222, 228, 238);
+        doc.setLineWidth(0.3);
+        doc.line(MARGEN, y - 4, ANCHO - MARGEN, y - 4);
+
+        parrafo(getPosLabel(f.position) + "   ·   " + fecha, { bold: true, size: 12, color: [17, 24, 44], after: 1 });
+        var meta = L.postedBy + autor + "   ·   " + L.pubDate + formatDate(String(f.created_at || "").slice(0, 10));
+        if (f.total_flight_hours != null) meta += "   ·   " + L.hours + f.total_flight_hours;
+        parrafo(meta, { size: 8.5, color: [120, 128, 145], after: 4 });
+
+        if (f.flight_experience_summary) {
+          parrafo(L.expTitle, { bold: true, size: 9.5, color: [37, 99, 235], after: 1.5 });
+          parrafo(f.flight_experience_summary, { size: 10, color: [55, 62, 76], after: 4 });
+        }
+
+        parrafo(L.fbTitle, { bold: true, size: 9.5, color: [37, 99, 235], after: 1.5 });
+        parrafo(f.feedback_text, { size: 10, color: [30, 36, 48], after: 4 });
+
+        if (f.aircraft_hours && f.aircraft_hours.length) {
+          parrafo(L.acTitle, { bold: true, size: 9.5, color: [37, 99, 235], after: 1.5 });
+          f.aircraft_hours.forEach(function (a) {
+            parrafo("•  " + a.aircraft_type + (a.hours != null ? "  ·  " + a.hours + " h" : ""), { size: 10, color: [51, 68, 102], after: 0.5 });
+          });
+          y += 3;
+        }
+
+        if (idx < feedbacks.length - 1) y += 5;
+      });
+
+      pieDePagina();
+      doc.save("feedbacks-" + company.slug + ".pdf");
+    });
+  }
+
   async function downloadFeedbacksFiles() {
+    if (!DESCARGAS_ABIERTAS) { abrirMuro(); return; }
     var company = state.currentCompany;
 
     var feedbacks = state.feedbacksFiltered;
@@ -1205,14 +1509,26 @@
       openFeedbackModal(state.currentCompany ? state.currentCompany.slug : null);
     });
 
-    // Descargar feedbacks en Word
-    $("#pn-detail-download").addEventListener("click", function () {
-      downloadFeedbacksDocx();
+    // --- Las tres descargas: Word, PDF y archivos ---
+    // Con el muro puesto ninguna descarga: el boton enseña el candado,
+    // barre la luz y sale el cartel. Con DESCARGAS_ABIERTAS = true este
+    // mismo codigo descarga, sin tocar nada mas.
+    [
+      ["#pn-detail-download",       downloadFeedbacksDocx],
+      ["#pn-detail-download-pdf",   downloadFeedbacksPdf],
+      ["#pn-detail-download-files", downloadFeedbacksFiles]
+    ].forEach(function (par) {
+      var btn = $(par[0]);
+      if (!btn) return;                       // el boton puede no existir aun
+      btn.addEventListener("click", function () {
+        if (!DESCARGAS_ABIERTAS) { avisarBloqueado(btn); return; }
+        par[1]();
+      });
     });
 
-    // Descargar archivos adjuntos en ZIP
-    $("#pn-detail-download-files").addEventListener("click", function () {
-      downloadFeedbacksFiles();
+    // Muro: cerrar
+    $$("[data-close-lock]").forEach(function (el) {
+      el.addEventListener("click", cerrarMuro);
     });
 
     // Modal: cerrar
@@ -1223,7 +1539,10 @@
       });
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !$("#pn-feedback-modal").hidden) closeFeedbackModal();
+      if (e.key !== "Escape") return;
+      if (!$("#pn-feedback-modal").hidden) { closeFeedbackModal(); return; }
+      var muro = $("#pn-lock-modal");
+      if (muro && !muro.hidden) cerrarMuro();
     });
 
     // Form
