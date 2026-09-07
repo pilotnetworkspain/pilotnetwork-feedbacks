@@ -167,6 +167,39 @@
                            en: 'They are written by pilots who already went through the process. A free account opens them, and that is what stops them being bulk-downloaded and passed around out of context.' },
     'tope-cta':          { es: 'Ver los que faltan',      en: 'See the rest' },
   };
+  /**
+   * Llevar la vista a un sitio, este la pagina donde este.
+   *
+   * EL PROBLEMA QUE ARREGLA. Esta pagina normalmente vive dentro de un
+   * iframe en www.pilotnetwork.es, y el iframe crece hasta caber entero:
+   * dentro no hay nada que desplazar, el que se desplaza es el padre. Por
+   * eso todo el codigo pedia el desplazamiento por postMessage y la
+   * pagina de Webador lo obedecia. Eso sigue igual.
+   *
+   * Pero abierta sola —una vista previa, o alguien que abre la direccion
+   * directa— NO hay padre que escuche: el mensaje se perdia y al entrar
+   * en una compania te quedabas arriba, mirando la lista, sin ver que
+   * abajo ya estaban los feedbacks. Parecia que el clic no hacia nada.
+   *
+   * Se hacen las dos cosas: el mensaje al padre, que es quien manda
+   * cuando hay iframe, y si no hay padre, el desplazamiento aqui mismo.
+   * Dentro del iframe lo segundo no estorba porque no hay barra que mover.
+   */
+  function hayPadre() {
+    try { return window.parent && window.parent !== window; } catch (e) { return true; }
+  }
+  function llevarLaVista(offset) {
+    var y = Math.max(0, offset);
+    try { window.parent.postMessage({ type: "pn-feedback-scroll-to", offset: y }, "*"); } catch (e) {}
+    if (hayPadre()) return;
+    try { window.scrollTo({ top: y, behavior: "smooth" }); } catch (e) { window.scrollTo(0, y); }
+  }
+  function llevarLaVistaArriba() {
+    try { window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*"); } catch (e) {}
+    if (hayPadre()) return;
+    try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) { window.scrollTo(0, 0); }
+  }
+
   function t(key) {
     var lang = window.pnCurrentLang || 'es';
     var entry = UI_TEXTS[key];
@@ -318,11 +351,7 @@
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     // Intento 2: avisa al padre para que haga scroll al top del iframe
-    function notifyParent() {
-      try {
-        window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*");
-      } catch(e) {}
-    }
+    function notifyParent() { llevarLaVistaArriba(); }
     notifyParent();
     setTimeout(notifyParent, 100);
     setTimeout(notifyParent, 400);
@@ -555,7 +584,7 @@
       var detail = document.getElementById("pn-company-detail");
       if (!detail) return;
       var offset = detail.getBoundingClientRect().top + (window.pageYOffset || 0);
-      try { window.parent.postMessage({ type: "pn-feedback-scroll-to", offset: Math.max(0, offset - 16) }, "*"); } catch(e) {}
+      llevarLaVista(offset - 16);
     });
   }
 
@@ -609,7 +638,7 @@
     // Como el modal esta dentro del iframe, si el padre esta scrolleado
     // hacia abajo el cartel queda fuera de la pantalla. Se le pide al
     // padre que suba, igual que hace el modal de publicar feedback.
-    try { window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*"); } catch (e) {}
+    llevarLaVistaArriba();
     var cerrar = m.querySelector(".pn-muro-cerrar");
     if (cerrar) cerrar.focus();
     sendHeight();
@@ -678,7 +707,7 @@
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
     // Scroll al top del iframe para que el usuario vea el modal
-    try { window.parent.postMessage({ type: "pn-feedback-scroll-top" }, "*"); } catch(e) {}
+    llevarLaVistaArriba();
     sendHeight();
   }
   function closeFeedbackModal() {
