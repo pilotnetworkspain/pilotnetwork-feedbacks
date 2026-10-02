@@ -166,6 +166,16 @@
     'tope-text':         { es: 'Los escriben pilotos que ya han pasado el proceso. Se leen con una cuenta gratuita, y así no acaban descargados en bloque y repartidos fuera de contexto.',
                            en: 'They are written by pilots who already went through the process. A free account opens them, and that is what stops them being bulk-downloaded and passed around out of context.' },
     'tope-cta':          { es: 'Ver los que faltan',      en: 'See the rest' },
+    // --- Pedir todos los feedbacks por correo (1-oct-2026, Cesar) ---
+    'pedir-title':       { es: '¿Quieres todos los feedbacks de {c}?', en: 'Want all the feedbacks for {c}?' },
+    'pedir-text':        { es: 'Pídelos por correo a pilotnetworkspain@gmail.com indicando tu nombre y apellidos, tu teléfono y tu correo electrónico. Tras aceptar las condiciones de uso personal, te enviamos un PDF con todos los feedbacks de la compañía, marcado con tus datos.',
+                           en: 'Request them by email at pilotnetworkspain@gmail.com, stating your full name, your phone number and your email address. Once you accept the personal-use terms, we send you a PDF with all of the airline\'s feedbacks, marked with your details.' },
+    'pedir-cta':         { es: 'Pedir los feedbacks por correo', en: 'Request the feedbacks by email' },
+    'pedir-copiar':      { es: 'Copiar el correo', en: 'Copy the address' },
+    'pedir-copiado':     { es: 'Copiado', en: 'Copied' },
+    'pedir-asunto':      { es: 'Solicitud de feedbacks: {c}', en: 'Feedback request: {c}' },
+    'pedir-cuerpo':      { es: 'Hola,\n\nMe gustaría recibir los feedbacks de {c}.\n\nNombre y apellidos: \nTeléfono: \nCorreo electrónico: \n\nGracias.',
+                           en: 'Hello,\n\nI would like to receive the feedbacks for {c}.\n\nFull name: \nPhone number: \nEmail address: \n\nThank you.' },
   };
   /**
    * Llevar la vista a un sitio, este la pagina donde este.
@@ -575,9 +585,16 @@
         aircraftHtml+
         filesHtml+
       '</article>';
-    }).join("") + (ocultos ? avisoDelTope(ocultos) : "");
+    }).join("") + (ocultos ? avisoDelTope(ocultos) : "") + avisoPedir();
     var botonTope = cont.querySelector("[data-abrir-muro]");
     if (botonTope) botonTope.addEventListener("click", function () { abrirMuro(); });
+    var botonCopiar = cont.querySelector("[data-copiar-correo]");
+    if (botonCopiar) botonCopiar.addEventListener("click", function () {
+      var hecho = function () { botonCopiar.textContent = t('pedir-copiado'); };
+      try {
+        navigator.clipboard.writeText(CORREO_PEDIR).then(hecho, function () {});
+      } catch (e) { /* sin portapapeles: el correo sigue a la vista */ }
+    });
     sendHeight();
     // Scroll al padre para que vea el inicio de la compañía
     requestAnimationFrame(function() {
@@ -586,6 +603,44 @@
       var offset = detail.getBoundingClientRect().top + (window.pageYOffset || 0);
       llevarLaVista(offset - 16);
     });
+  }
+
+  /**
+   * PEDIR TODOS LOS FEEDBACKS POR CORREO (1-oct-2026). Cesar: «pon un aviso
+   * de que si necesitan mas feedbacks lo pidan a pilotnetworkspain@gmail.com
+   * poniendo nombre, apellidos, telefono y correo para enviarselo».
+   *
+   * Sale debajo de los feedbacks de cada compañia. El boton abre el
+   * programa de correo con el asunto y una plantilla ya escritos (nombre,
+   * telefono, correo, compañia); el correo va tambien a la vista con un
+   * boton de copiar, porque muchos navegadores no tienen programa de correo
+   * asociado y un mailto: suelto no hace nada. Cesar comprueba los datos y
+   * hace la entrega desde la web nueva: la persona acepta las condiciones de
+   * uso personal y recibe el PDF con su marca de agua (pilotnetwork-web,
+   * app/entrega).
+   */
+  var CORREO_PEDIR = "pilotnetworkspain@gmail.com";
+  function avisoPedir() {
+    var c = state.currentCompany && state.currentCompany.name ? state.currentCompany.name : "";
+    var poner = function (k) { return t(k).split('{c}').join(c); };
+    var href = "mailto:" + CORREO_PEDIR +
+      "?subject=" + encodeURIComponent(poner('pedir-asunto')) +
+      "&body=" + encodeURIComponent(poner('pedir-cuerpo'));
+    return '<div class="pn-pedir">' +
+      '<span class="pn-pedir-icono" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" width="24" height="24" fill="none">' +
+          '<rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="2"/>' +
+          '<path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>' +
+      '</span>' +
+      '<h4>' + escapeHtml(poner('pedir-title')) + '</h4>' +
+      '<p>' + escapeHtml(t('pedir-text')) + '</p>' +
+      '<div class="pn-pedir-acciones">' +
+        '<a class="pn-feedback-btn pn-feedback-btn-primary" href="' + escapeHtml(href) + '" target="_top" rel="noopener">' + escapeHtml(t('pedir-cta')) + '</a>' +
+        '<span class="pn-pedir-correo">' + CORREO_PEDIR + '</span>' +
+        '<button class="pn-feedback-btn pn-pedir-copiar" type="button" data-copiar-correo="1">' + escapeHtml(t('pedir-copiar')) + '</button>' +
+      '</div>' +
+    '</div>';
   }
 
   /**
