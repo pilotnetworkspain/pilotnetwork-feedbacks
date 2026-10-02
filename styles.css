@@ -770,3 +770,17 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Pedir todos los feedbacks por correo (1-oct-2026). Misma familia que el
+   cartel del tope, con el sobre en lugar del candado. */
+.pn-pedir {
+  margin: 18px 0 4px; padding: 26px 22px; border-radius: 18px; text-align: center;
+  border: 1px solid rgba(157, 180, 255, 0.35);
+  background: linear-gradient(180deg, rgba(77, 143, 251, 0.14), rgba(77, 143, 251, 0.04));
+}
+.pn-pedir-icono { display: inline-flex; color: #9DB4FF; margin-bottom: 10px; }
+.pn-pedir h4 { margin: 0 0 8px; font-size: 17px; font-weight: 900; letter-spacing: -.3px; color: #fff; }
+.pn-pedir p { max-width: 60ch; margin: 0 auto 18px; color: var(--pn-soft); font-size: 14px; line-height: 1.6; }
+.pn-pedir-acciones { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
+.pn-pedir-correo { font-weight: 700; color: #fff; font-size: 14px; user-select: all; }
+.pn-pedir-copiar { min-height: 36px; padding: 6px 14px; font-size: 13px; }
