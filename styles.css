@@ -808,3 +808,13 @@ html, body {
 .pn-pedir-errores { margin: 0 0 14px; padding: 10px 14px 10px 30px; border-radius: 12px; background: rgba(240, 115, 111, 0.12); border: 1px solid rgba(240, 115, 111, 0.45); color: #fff; font-size: 14px; }
 .pn-pedir-este-fila { display: flex; justify-content: flex-end; margin-top: 12px; }
 .pn-pedir-este { min-height: 34px; padding: 6px 14px; font-size: 13px; }
+/* «Pedir más feedbacks» en la cabecera de la compañía (9-oct). */
+.pn-pedir-mas { border: 1px solid rgba(157, 180, 255, 0.45); }
+.pn-pedir-mas[hidden] { display: none; }
+/* Al llegar desde un botón, el formulario se ilumina un momento. */
+.pn-pedir-resalta { animation: pn-pedir-luz 1.6s ease-out 1; }
+@keyframes pn-pedir-luz {
+  0% { box-shadow: 0 0 0 0 rgba(77, 143, 251, 0.0); }
+  20% { box-shadow: 0 0 0 4px rgba(77, 143, 251, 0.55), 0 0 40px rgba(77, 143, 251, 0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(77, 143, 251, 0.0); }
+}

@@ -169,21 +169,18 @@
     // --- Pedir los feedbacks con un formulario (9-oct-2026, Cesar) ---
     // Antes (1-oct) era un aviso con un mailto. Ahora es un formulario que
     // llega al panel de Cesar para aprobarlo. Ver solicitarFeedbacks() abajo.
-    'pedir-title':       { es: 'Pide los feedbacks de {c}', en: 'Request the {c} feedbacks' },
-    'pedir-text':        { es: 'Déjanos tus datos y te los enviamos por correo en un PDF marcado con tu nombre, tu teléfono y tu correo. Revisamos cada solicitud a mano; cuando la aprobemos, te llegará un correo para confirmar con un clic.',
-                           en: 'Leave us your details and we will email them to you as a PDF marked with your name, phone and email. We review every request by hand; once we approve it, you will receive an email to confirm with one click.' },
+    'pedir-title':       { es: 'Pide más feedbacks de {c}', en: 'Request more {c} feedbacks' },
+    'pedir-text':        { es: 'Déjanos tus datos y te enviamos por correo todos los feedbacks de la compañía ({n}) en un PDF marcado con tu nombre, tu teléfono y tu correo. Revisamos cada solicitud a mano; cuando la aprobemos, te llegará un correo para confirmar con un clic.',
+                           en: 'Leave us your details and we will email you all of the airline\'s feedbacks ({n}) as a PDF marked with your name, phone and email. We review every request by hand; once we approve it, you will receive an email to confirm with one click.' },
     'pedir-nombre':      { es: 'Nombre y apellidos', en: 'Full name' },
     'pedir-telefono':    { es: 'Teléfono', en: 'Phone' },
     'pedir-correo':      { es: 'Correo electrónico', en: 'Email' },
-    'pedir-cual':        { es: 'Qué quieres', en: 'What you want' },
-    'pedir-todos':       { es: 'Todos los feedbacks ({n})', en: 'All the feedbacks ({n})' },
-    'pedir-uno':         { es: 'Solo este: {f}', en: 'Only this one: {f}' },
     'pedir-idioma':      { es: 'Idioma del documento', en: 'Language of the document' },
     'pedir-condiciones': { es: 'Las condiciones de uso personal', en: 'The personal-use terms' },
     'pedir-acepto':      { es: 'He leído y acepto las condiciones de uso personal del documento.', en: 'I have read and accept the personal-use terms of the document.' },
     'pedir-cta':         { es: 'Enviar solicitud', en: 'Send request' },
     'pedir-enviando':    { es: 'Enviando…', en: 'Sending…' },
-    'pedir-este':        { es: 'Pedir este feedback', en: 'Request this feedback' },
+    'pedir-mas':         { es: 'Pedir más feedbacks', en: 'Request more feedbacks' },
     'pedir-ok-title':    { es: '¡Solicitud recibida!', en: 'Request received!' },
     'pedir-ok':          { es: 'La revisamos y, cuando la aprobemos, te llegará un correo a {e} para confirmar y recibir el PDF. Mira también en spam o promociones.',
                            en: 'We will review it and, once approved, you will receive an email at {e} to confirm and receive the PDF. Check your spam or promotions folder too.' },
@@ -434,6 +431,8 @@
   }
 
   async function loadFeedbacks(companyId) {
+    var bPedir = $("#pn-detail-pedir");
+    if (bPedir) bPedir.hidden = true;   // vuelve a salir si hay formulario (prepararPedir)
     $("#pn-detail-loading").hidden = false;
     $("#pn-detail-empty").hidden = true;
     $("#pn-detail-feedbacks-list").innerHTML = "";
@@ -503,6 +502,7 @@
     var cont = $("#pn-detail-feedbacks-list");
     if (!state.feedbacksFiltered.length) {
       cont.innerHTML = '<div class="pn-feedback-state"><p>'+escapeHtml(t('no-filter-match'))+'</p></div>';
+      prepararPedir(cont);
       sendHeight();
       return;
     }
@@ -603,7 +603,7 @@
         '<div class="pn-feedback-item-block"><h4>'+escapeHtml(t('feedback-section'))+'</h4><div class="pn-feedback-item-body">'+escapeHtml(f.feedback_text)+'</div></div>'+
         aircraftHtml+
         filesHtml+
-        '<div class="pn-pedir-este-fila"><button type="button" class="pn-feedback-btn pn-pedir-este" data-pedir-este="'+escapeHtml(f.id)+'">'+escapeHtml(t('pedir-este'))+'</button></div>'+
+        '<div class="pn-pedir-este-fila"><button type="button" class="pn-feedback-btn pn-pedir-este" data-pedir-mas="1">'+escapeHtml(t('pedir-mas'))+'</button></div>'+
       '</article>';
     }).join("") + (ocultos ? avisoDelTope(ocultos) : "") + avisoPedir(visibles);
     var botonTope = cont.querySelector("[data-abrir-muro]");
@@ -670,21 +670,12 @@
   var pedirAbierto = 0;
   var pedirHecho = null;   // { slug, correo } cuando ya se mando, para no volver a pintar el formulario
 
-  function etiquetaFeedback(f) {
-    var fecha = f.assessment_date || f.assessment_start_date || (f.created_at ? f.created_at.slice(0, 10) : "");
-    return [f.position ? getPosLabel(f.position) : "", fecha ? formatDate(fecha) : ""].filter(Boolean).join(" · ") || t('anonymous');
-  }
-
   function avisoPedir(visibles) {
     var lang = window.pnCurrentLang === 'en' ? 'en' : 'es';
     var c = state.currentCompany && state.currentCompany.name ? state.currentCompany.name : "";
     var slug = state.currentCompany ? state.currentCompany.slug : "";
     var total = state.currentCompany && state.currentCompany.feedback_count != null ? state.currentCompany.feedback_count : state.feedbacksFiltered.length;
     if (pedirHecho && pedirHecho.slug === slug) return pedirOkHtml(pedirHecho.correo);
-    var opciones = '<option value="">' + escapeHtml(t('pedir-todos').split('{n}').join(String(total))) + '</option>' +
-      (visibles || []).map(function (f) {
-        return '<option value="' + escapeHtml(f.id) + '">' + escapeHtml(t('pedir-uno').split('{f}').join(etiquetaFeedback(f))) + '</option>';
-      }).join("");
     var campo = function (id, nombre, tipo, etiqueta, extra) {
       return '<p class="pn-pedir-campo"><label for="' + id + '">' + escapeHtml(t(etiqueta)) + '</label>' +
         '<input id="' + id + '" name="' + nombre + '" type="' + tipo + '" ' + extra + '></p>';
@@ -697,7 +688,7 @@
         '</svg>' +
       '</span>' +
       '<h4>' + escapeHtml(t('pedir-title').split('{c}').join(c)) + '</h4>' +
-      '<p>' + escapeHtml(t('pedir-text')) + '</p>' +
+      '<p>' + escapeHtml(t('pedir-text').split('{n}').join(String(total))) + '</p>' +
       '<form class="pn-pedir-form" novalidate data-slug="' + escapeHtml(slug) + '">' +
         '<ul class="pn-pedir-errores" role="alert" hidden></ul>' +
         '<div class="pn-pedir-campos">' +
@@ -705,8 +696,6 @@
           campo('pn-pedir-telefono', 'telefono', 'tel', 'pedir-telefono', 'maxlength="24" autocomplete="tel" placeholder="+34 600 000 000" required') +
           '<p class="pn-pedir-campo pn-pedir-ancho"><label for="pn-pedir-correo">' + escapeHtml(t('pedir-correo')) + '</label>' +
             '<input id="pn-pedir-correo" name="correo" type="email" maxlength="254" autocomplete="email" required></p>' +
-          '<p class="pn-pedir-campo"><label for="pn-pedir-cual">' + escapeHtml(t('pedir-cual')) + '</label>' +
-            '<select id="pn-pedir-cual" name="feedback">' + opciones + '</select></p>' +
           '<p class="pn-pedir-campo"><label for="pn-pedir-idioma">' + escapeHtml(t('pedir-idioma')) + '</label>' +
             '<select id="pn-pedir-idioma" name="l"><option value="es"' + (lang === 'es' ? ' selected' : '') + '>Español</option><option value="en"' + (lang === 'en' ? ' selected' : '') + '>English</option></select></p>' +
         '</div>' +
@@ -734,7 +723,7 @@
   var pedirBorrador = {};
   function guardarBorrador(form) {
     if (!form) return;
-    ["nombre", "telefono", "correo", "feedback", "l"].forEach(function (k) {
+    ["nombre", "telefono", "correo", "l"].forEach(function (k) {
       if (form.elements[k]) pedirBorrador[k] = form.elements[k].value;
     });
     pedirBorrador.acepto = form.elements.acepto ? form.elements.acepto.checked : false;
@@ -743,27 +732,16 @@
 
   function prepararPedir(cont) {
     var zona = cont.querySelector("#pn-pedir");
+    // El botón de la cabecera solo tiene sentido si hay formulario al que bajar.
+    var bCab = document.getElementById("pn-detail-pedir");
+    if (bCab) bCab.hidden = !zona;
     if (!zona) return;
     var otra = zona.querySelector("[data-pedir-otra]");
     if (otra) otra.addEventListener("click", function () { pedirHecho = null; renderFeedbacks(); });
     var form = zona.querySelector("form");
-    // «Pedir este feedback» en cada tarjeta: lo elige en el formulario y baja.
-    cont.querySelectorAll("[data-pedir-este]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        if (pedirHecho) { pedirHecho = null; renderFeedbacks(); }
-        var f = document.querySelector("#pn-pedir form");
-        if (!f) return;
-        var sel = f.elements.feedback;
-        if (sel) sel.value = b.getAttribute("data-pedir-este");
-        var z = document.getElementById("pn-pedir");
-        var top = z.getBoundingClientRect().top + (window.pageYOffset || 0);
-        llevarLaVista(top - 16);
-        try { f.elements.nombre.focus({ preventScroll: true }); } catch (e) {}
-      });
-    });
     if (!form) return;
     if (pedirBorrador.slug === form.getAttribute("data-slug")) {
-      ["nombre", "telefono", "correo", "feedback", "l"].forEach(function (k) {
+      ["nombre", "telefono", "correo", "l"].forEach(function (k) {
         if (pedirBorrador[k] != null && form.elements[k]) form.elements[k].value = pedirBorrador[k];
       });
       if (form.elements.acepto) form.elements.acepto.checked = !!pedirBorrador.acepto;
@@ -776,6 +754,29 @@
     form.addEventListener("change", function () { guardarBorrador(form); });
     form.addEventListener("submit", function (ev) { ev.preventDefault(); enviarPedir(form); });
   }
+
+  /**
+   * «Pedir más feedbacks» (cabecera de la compañía y cada tarjeta): baja al
+   * formulario, lo resalta un momento y pone el cursor en el nombre.
+   */
+  function irAPedir() {
+    if (pedirHecho) { pedirHecho = null; renderFeedbacks(); }
+    var z = document.getElementById("pn-pedir");
+    if (!z) return;
+    var top = z.getBoundingClientRect().top + (window.pageYOffset || 0);
+    llevarLaVista(top - 16);
+    z.classList.remove("pn-pedir-resalta");
+    void z.offsetWidth;
+    z.classList.add("pn-pedir-resalta");
+    var f = z.querySelector("form");
+    try { if (f) f.elements.nombre.focus({ preventScroll: true }); } catch (e) {}
+  }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target && ev.target.closest ? ev.target.closest("[data-pedir-mas]") : null;
+    if (!b) return;
+    ev.preventDefault();
+    irAPedir();
+  });
 
   function mostrarErroresPedir(form, claves) {
     var ul = form.querySelector(".pn-pedir-errores");
@@ -792,7 +793,7 @@
     var limpio = function (v, tope) { return String(v || "").replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, tope); };
     var datos = {
       slug: form.getAttribute("data-slug"),
-      feedback_id: form.elements.feedback.value || null,
+      feedback_id: null,   // 9-oct, Cesar: se piden todos, no uno suelto
       nombre: limpio(form.elements.nombre.value, 80),
       telefono: limpio(form.elements.telefono.value, 24),
       correo: limpio(form.elements.correo.value, 254).toLowerCase(),
