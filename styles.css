@@ -771,16 +771,40 @@ html, body {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
-/* Pedir todos los feedbacks por correo (1-oct-2026). Misma familia que el
-   cartel del tope, con el sobre en lugar del candado. */
+/* Pedir los feedbacks con un formulario (9-oct-2026). Misma familia que el
+   cartel del tope, con el sobre en lugar del candado. Sustituye al aviso
+   con mailto del 1-oct. */
 .pn-pedir {
   margin: 18px 0 4px; padding: 26px 22px; border-radius: 18px; text-align: center;
   border: 1px solid rgba(157, 180, 255, 0.35);
   background: linear-gradient(180deg, rgba(77, 143, 251, 0.14), rgba(77, 143, 251, 0.04));
 }
-.pn-pedir-icono { display: inline-flex; color: #9DB4FF; margin-bottom: 10px; }
-.pn-pedir h4 { margin: 0 0 8px; font-size: 17px; font-weight: 900; letter-spacing: -.3px; color: #fff; }
-.pn-pedir p { max-width: 60ch; margin: 0 auto 18px; color: var(--pn-soft); font-size: 14px; line-height: 1.6; }
+.pn-pedir-icono { display: inline-flex; color: #9DB4FF; margin-bottom: 10px; font-size: 28px; line-height: 1; }
+.pn-pedir h4 { margin: 0 0 8px; font-size: 19px; font-weight: 900; letter-spacing: -.3px; color: #fff; }
+.pn-pedir > p { max-width: 60ch; margin: 0 auto 18px; color: var(--pn-soft); font-size: 14px; line-height: 1.6; }
 .pn-pedir-acciones { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
-.pn-pedir-correo { font-weight: 700; color: #fff; font-size: 14px; user-select: all; }
-.pn-pedir-copiar { min-height: 36px; padding: 6px 14px; font-size: 13px; }
+.pn-pedir-form { max-width: 640px; margin: 0 auto; text-align: left; }
+.pn-pedir-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+.pn-pedir-ancho { grid-column: 1 / -1; }
+@media (max-width: 560px) { .pn-pedir { padding: 22px 14px; } .pn-pedir-campos { grid-template-columns: 1fr; } }
+.pn-pedir-campo { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }
+.pn-pedir-campo label { font-size: 12.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--pn-soft); }
+.pn-pedir-campo input, .pn-pedir-campo select {
+  min-height: 44px; padding: 10px 12px; border-radius: 10px; font: inherit; font-size: 15px; color: #fff;
+  background: rgba(5, 9, 20, 0.7); border: 1px solid rgba(157, 180, 255, 0.25); width: 100%; box-sizing: border-box;
+}
+.pn-pedir-campo input:focus, .pn-pedir-campo select:focus { outline: 2px solid #4D8FFB; outline-offset: 1px; }
+.pn-pedir-campo input[aria-invalid="true"] { border-color: #f0736f; }
+.pn-pedir-trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.pn-pedir-condiciones { margin: 4px 0 12px; padding: 10px 14px; border-radius: 12px; background: rgba(5, 9, 20, 0.45); border: 1px solid rgba(157, 180, 255, 0.18); }
+.pn-pedir-condiciones summary { cursor: pointer; color: #9DB4FF; font-weight: 700; font-size: 14px; }
+.pn-pedir-condiciones ol { margin: 10px 0; padding: 0 0 0 20px; color: var(--pn-soft); font-size: 13.5px; line-height: 1.55; }
+.pn-pedir-condiciones li { margin: 0 0 6px; }
+.pn-pedir-datos { margin: 0; font-size: 12.5px; color: var(--pn-soft); line-height: 1.5; }
+.pn-pedir-datos a { color: #9DB4FF; }
+.pn-pedir-acepto { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(157, 180, 255, 0.3); cursor: pointer; color: #fff; font-size: 14.5px; line-height: 1.45; }
+.pn-pedir-acepto input { width: 20px; height: 20px; margin: 1px 0 0; flex: none; accent-color: #4D8FFB; }
+.pn-pedir-enviar { width: 100%; min-height: 46px; }
+.pn-pedir-errores { margin: 0 0 14px; padding: 10px 14px 10px 30px; border-radius: 12px; background: rgba(240, 115, 111, 0.12); border: 1px solid rgba(240, 115, 111, 0.45); color: #fff; font-size: 14px; }
+.pn-pedir-este-fila { display: flex; justify-content: flex-end; margin-top: 12px; }
+.pn-pedir-este { min-height: 34px; padding: 6px 14px; font-size: 13px; }

@@ -166,16 +166,35 @@
     'tope-text':         { es: 'Los escriben pilotos que ya han pasado el proceso. Se leen con una cuenta gratuita, y así no acaban descargados en bloque y repartidos fuera de contexto.',
                            en: 'They are written by pilots who already went through the process. A free account opens them, and that is what stops them being bulk-downloaded and passed around out of context.' },
     'tope-cta':          { es: 'Ver los que faltan',      en: 'See the rest' },
-    // --- Pedir todos los feedbacks por correo (1-oct-2026, Cesar) ---
-    'pedir-title':       { es: '¿Quieres todos los feedbacks de {c}?', en: 'Want all the feedbacks for {c}?' },
-    'pedir-text':        { es: 'Pídelos por correo a pilotnetworkspain@gmail.com indicando tu nombre y apellidos, tu teléfono y tu correo electrónico. Tras aceptar las condiciones de uso personal, te enviamos un PDF con todos los feedbacks de la compañía, marcado con tus datos.',
-                           en: 'Request them by email at pilotnetworkspain@gmail.com, stating your full name, your phone number and your email address. Once you accept the personal-use terms, we send you a PDF with all of the airline\'s feedbacks, marked with your details.' },
-    'pedir-cta':         { es: 'Pedir los feedbacks por correo', en: 'Request the feedbacks by email' },
-    'pedir-copiar':      { es: 'Copiar el correo', en: 'Copy the address' },
-    'pedir-copiado':     { es: 'Copiado', en: 'Copied' },
-    'pedir-asunto':      { es: 'Solicitud de feedbacks: {c}', en: 'Feedback request: {c}' },
-    'pedir-cuerpo':      { es: 'Hola,\n\nMe gustaría recibir los feedbacks de {c}.\n\nNombre y apellidos: \nTeléfono: \nCorreo electrónico: \n\nGracias.',
-                           en: 'Hello,\n\nI would like to receive the feedbacks for {c}.\n\nFull name: \nPhone number: \nEmail address: \n\nThank you.' },
+    // --- Pedir los feedbacks con un formulario (9-oct-2026, Cesar) ---
+    // Antes (1-oct) era un aviso con un mailto. Ahora es un formulario que
+    // llega al panel de Cesar para aprobarlo. Ver solicitarFeedbacks() abajo.
+    'pedir-title':       { es: 'Pide los feedbacks de {c}', en: 'Request the {c} feedbacks' },
+    'pedir-text':        { es: 'Déjanos tus datos y te los enviamos por correo en un PDF marcado con tu nombre, tu teléfono y tu correo. Revisamos cada solicitud a mano; cuando la aprobemos, te llegará un correo para confirmar con un clic.',
+                           en: 'Leave us your details and we will email them to you as a PDF marked with your name, phone and email. We review every request by hand; once we approve it, you will receive an email to confirm with one click.' },
+    'pedir-nombre':      { es: 'Nombre y apellidos', en: 'Full name' },
+    'pedir-telefono':    { es: 'Teléfono', en: 'Phone' },
+    'pedir-correo':      { es: 'Correo electrónico', en: 'Email' },
+    'pedir-cual':        { es: 'Qué quieres', en: 'What you want' },
+    'pedir-todos':       { es: 'Todos los feedbacks ({n})', en: 'All the feedbacks ({n})' },
+    'pedir-uno':         { es: 'Solo este: {f}', en: 'Only this one: {f}' },
+    'pedir-idioma':      { es: 'Idioma del documento', en: 'Language of the document' },
+    'pedir-condiciones': { es: 'Las condiciones de uso personal', en: 'The personal-use terms' },
+    'pedir-acepto':      { es: 'He leído y acepto las condiciones de uso personal del documento.', en: 'I have read and accept the personal-use terms of the document.' },
+    'pedir-cta':         { es: 'Enviar solicitud', en: 'Send request' },
+    'pedir-enviando':    { es: 'Enviando…', en: 'Sending…' },
+    'pedir-este':        { es: 'Pedir este feedback', en: 'Request this feedback' },
+    'pedir-ok-title':    { es: '¡Solicitud recibida!', en: 'Request received!' },
+    'pedir-ok':          { es: 'La revisamos y, cuando la aprobemos, te llegará un correo a {e} para confirmar y recibir el PDF. Mira también en spam o promociones.',
+                           en: 'We will review it and, once approved, you will receive an email at {e} to confirm and receive the PDF. Check your spam or promotions folder too.' },
+    'pedir-otra':        { es: 'Pedir otra', en: 'Request another' },
+    'pedir-err-correo':  { es: 'Escribe un correo válido.', en: 'Enter a valid email.' },
+    'pedir-err-nombre':  { es: 'Escribe tu nombre y apellidos.', en: 'Enter your full name.' },
+    'pedir-err-telefono':{ es: 'Escribe un teléfono (con al menos 6 cifras).', en: 'Enter a phone number (at least 6 digits).' },
+    'pedir-err-acepto':  { es: 'Para pedir el documento tienes que aceptar las condiciones.', en: 'To request the document you need to accept the terms.' },
+    'pedir-err-limite':  { es: 'Has hecho varias solicitudes hoy. Inténtalo mañana o escríbenos a pilotnetworkspain@gmail.com.', en: 'You have sent several requests today. Try again tomorrow or write to pilotnetworkspain@gmail.com.' },
+    'pedir-err-red':     { es: 'No hemos podido enviar la solicitud. Prueba otra vez en un momento.', en: 'We could not send the request. Please try again in a moment.' },
+    'pedir-privacidad':  { es: 'Política de privacidad', en: 'Privacy policy' },
   };
   /**
    * Llevar la vista a un sitio, este la pagina donde este.
@@ -584,17 +603,12 @@
         '<div class="pn-feedback-item-block"><h4>'+escapeHtml(t('feedback-section'))+'</h4><div class="pn-feedback-item-body">'+escapeHtml(f.feedback_text)+'</div></div>'+
         aircraftHtml+
         filesHtml+
+        '<div class="pn-pedir-este-fila"><button type="button" class="pn-feedback-btn pn-pedir-este" data-pedir-este="'+escapeHtml(f.id)+'">'+escapeHtml(t('pedir-este'))+'</button></div>'+
       '</article>';
-    }).join("") + (ocultos ? avisoDelTope(ocultos) : "") + avisoPedir();
+    }).join("") + (ocultos ? avisoDelTope(ocultos) : "") + avisoPedir(visibles);
     var botonTope = cont.querySelector("[data-abrir-muro]");
     if (botonTope) botonTope.addEventListener("click", function () { abrirMuro(); });
-    var botonCopiar = cont.querySelector("[data-copiar-correo]");
-    if (botonCopiar) botonCopiar.addEventListener("click", function () {
-      var hecho = function () { botonCopiar.textContent = t('pedir-copiado'); };
-      try {
-        navigator.clipboard.writeText(CORREO_PEDIR).then(hecho, function () {});
-      } catch (e) { /* sin portapapeles: el correo sigue a la vista */ }
-    });
+    prepararPedir(cont);
     sendHeight();
     // Scroll al padre para que vea el inicio de la compañía
     requestAnimationFrame(function() {
@@ -606,41 +620,226 @@
   }
 
   /**
-   * PEDIR TODOS LOS FEEDBACKS POR CORREO (1-oct-2026). Cesar: «pon un aviso
-   * de que si necesitan mas feedbacks lo pidan a pilotnetworkspain@gmail.com
-   * poniendo nombre, apellidos, telefono y correo para enviarselo».
+   * PEDIR LOS FEEDBACKS CON UN FORMULARIO (9-oct-2026). Cesar: «en vez de
+   * que me manden un correo, que en la respectiva compañia le salga un
+   * formulario con sus datos personales, correo y telefono, y me llegue a
+   * mi panel para aprobar el envio automatico de los documentos».
    *
-   * Sale debajo de los feedbacks de cada compañia. El boton abre el
-   * programa de correo con el asunto y una plantilla ya escritos (nombre,
-   * telefono, correo, compañia); el correo va tambien a la vista con un
-   * boton de copiar, porque muchos navegadores no tienen programa de correo
-   * asociado y un mailto: suelto no hace nada. Cesar comprueba los datos y
-   * hace la entrega desde la web nueva: la persona acepta las condiciones de
-   * uso personal y recibe el PDF con su marca de agua (pilotnetwork-web,
-   * app/entrega).
+   * Sustituye al aviso con mailto del 1-oct. El formulario va a la edge
+   * function «solicitar-feedbacks» (Supabase), que valida, limita y guarda;
+   * a Cesar le llega un aviso y lo aprueba en la web nueva
+   * (/cuenta/solicitudes). Al aprobar, la persona recibe un correo para
+   * confirmar con un clic y le llega el PDF con su marca de agua.
+   *
+   * Las condiciones son LAS MISMAS que en la web nueva
+   * (pilotnetwork-web, lib/entrega-condiciones.ts), con la misma version.
+   * Si alli cambian, se cambian aqui y en la edge function.
+   *
+   * Contra robots: una casilla trampa invisible («web») y un minimo de 3
+   * segundos con el formulario delante. Y Cesar aprueba cada una a mano.
    */
-  var CORREO_PEDIR = "pilotnetworkspain@gmail.com";
-  function avisoPedir() {
+  var CONDICIONES_VERSION = "entrega-2026-10-08";
+  var CONDICIONES = {
+    es: [
+      "Es para tu uso exclusivamente personal: para preparar tu propio proceso de selección.",
+      "No puedes compartirlo, reenviarlo, publicarlo ni subirlo a grupos, foros, drives, redes sociales o academias, ni en todo ni en parte.",
+      "No puedes venderlo, comercializarlo, cederlo ni usarlo en cursos, servicios o productos, propios o de terceros.",
+      "No puedes quitar ni alterar la marca de agua ni el aviso legal.",
+      "Todo esto vale igual para los documentos adjuntos, si los recibes: cada uno lleva tu marca y el aviso legal.",
+      "Cada página lleva tu correo (y tu nombre y teléfono, si nos los diste) y un código de entrega único: si el documento aparece fuera de tus manos, se sabrá que salió de tu copia.",
+      "Al aceptar quedan registrados la fecha y la hora, tu dirección IP y tu navegador, como prueba de esta aceptación.",
+      "Incumplir estas condiciones te obliga a indemnizar los daños y perjuicios causados (art. 1101 del Código Civil) y puede dar lugar a acciones por la Ley de Propiedad Intelectual (arts. 133 a 141, derecho sobre la base de datos) y, si hay ánimo de lucro, por el art. 270 del Código Penal."
+    ],
+    en: [
+      "It is for your strictly personal use: to prepare for your own selection process.",
+      "You may not share, forward, publish or upload it to groups, forums, drives, social networks or academies, in whole or in part.",
+      "You may not sell it, commercialise it, transfer it or use it in courses, services or products, your own or anyone else's.",
+      "You may not remove or alter the watermark or the legal notice.",
+      "All of this applies equally to the attached documents, if you receive them: each one carries your mark and the legal notice.",
+      "Every page carries your email (and your name and phone number, if you gave them to us) and a unique delivery code: if the document turns up outside your hands, it will be known that it came from your copy.",
+      "When you accept, the date and time, your IP address and your browser are recorded as proof of this acceptance.",
+      "Breaching these terms makes you liable for the damage caused (Art. 1101 of the Spanish Civil Code) and may give rise to actions under the Spanish Intellectual Property Act (Arts. 133 to 141, database right) and, where there is a profit motive, Art. 270 of the Spanish Criminal Code."
+    ]
+  };
+  var DATOS_PEDIR = {
+    es: "Tus datos (tu correo y, si nos los diste, tu nombre y teléfono) se usan solo para esta entrega y para poder acreditar esta aceptación. Más información en la política de privacidad de Pilot Network.",
+    en: "Your details (your email and, if you gave them, your name and phone) are used only for this delivery and to be able to prove this acceptance. More information in the Pilot Network privacy policy."
+  };
+  var PRIVACIDAD = { es: "https://www.pilotnetwork.es/politica-de-privacidad", en: "https://www.pilotnetwork.es/privacy-policy" };
+  var CORREO_VALIDO = /^[^\s@<>()[\]\\,;:"]{1,64}@[^\s@<>()[\]\\,;:"]{1,190}\.[a-z]{2,24}$/i;
+  var pedirAbierto = 0;
+  var pedirHecho = null;   // { slug, correo } cuando ya se mando, para no volver a pintar el formulario
+
+  function etiquetaFeedback(f) {
+    var fecha = f.assessment_date || f.assessment_start_date || (f.created_at ? f.created_at.slice(0, 10) : "");
+    return [f.position ? getPosLabel(f.position) : "", fecha ? formatDate(fecha) : ""].filter(Boolean).join(" · ") || t('anonymous');
+  }
+
+  function avisoPedir(visibles) {
+    var lang = window.pnCurrentLang === 'en' ? 'en' : 'es';
     var c = state.currentCompany && state.currentCompany.name ? state.currentCompany.name : "";
-    var poner = function (k) { return t(k).split('{c}').join(c); };
-    var href = "mailto:" + CORREO_PEDIR +
-      "?subject=" + encodeURIComponent(poner('pedir-asunto')) +
-      "&body=" + encodeURIComponent(poner('pedir-cuerpo'));
-    return '<div class="pn-pedir">' +
+    var slug = state.currentCompany ? state.currentCompany.slug : "";
+    var total = state.currentCompany && state.currentCompany.feedback_count != null ? state.currentCompany.feedback_count : state.feedbacksFiltered.length;
+    if (pedirHecho && pedirHecho.slug === slug) return pedirOkHtml(pedirHecho.correo);
+    var opciones = '<option value="">' + escapeHtml(t('pedir-todos').split('{n}').join(String(total))) + '</option>' +
+      (visibles || []).map(function (f) {
+        return '<option value="' + escapeHtml(f.id) + '">' + escapeHtml(t('pedir-uno').split('{f}').join(etiquetaFeedback(f))) + '</option>';
+      }).join("");
+    var campo = function (id, nombre, tipo, etiqueta, extra) {
+      return '<p class="pn-pedir-campo"><label for="' + id + '">' + escapeHtml(t(etiqueta)) + '</label>' +
+        '<input id="' + id + '" name="' + nombre + '" type="' + tipo + '" ' + extra + '></p>';
+    };
+    return '<section class="pn-pedir" id="pn-pedir">' +
       '<span class="pn-pedir-icono" aria-hidden="true">' +
         '<svg viewBox="0 0 24 24" width="24" height="24" fill="none">' +
           '<rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="2"/>' +
           '<path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
         '</svg>' +
       '</span>' +
-      '<h4>' + escapeHtml(poner('pedir-title')) + '</h4>' +
+      '<h4>' + escapeHtml(t('pedir-title').split('{c}').join(c)) + '</h4>' +
       '<p>' + escapeHtml(t('pedir-text')) + '</p>' +
-      '<div class="pn-pedir-acciones">' +
-        '<a class="pn-feedback-btn pn-feedback-btn-primary" href="' + escapeHtml(href) + '" target="_top" rel="noopener">' + escapeHtml(t('pedir-cta')) + '</a>' +
-        '<span class="pn-pedir-correo">' + CORREO_PEDIR + '</span>' +
-        '<button class="pn-feedback-btn pn-pedir-copiar" type="button" data-copiar-correo="1">' + escapeHtml(t('pedir-copiar')) + '</button>' +
-      '</div>' +
-    '</div>';
+      '<form class="pn-pedir-form" novalidate data-slug="' + escapeHtml(slug) + '">' +
+        '<ul class="pn-pedir-errores" role="alert" hidden></ul>' +
+        '<div class="pn-pedir-campos">' +
+          campo('pn-pedir-nombre', 'nombre', 'text', 'pedir-nombre', 'maxlength="80" autocomplete="name" required') +
+          campo('pn-pedir-telefono', 'telefono', 'tel', 'pedir-telefono', 'maxlength="24" autocomplete="tel" placeholder="+34 600 000 000" required') +
+          '<p class="pn-pedir-campo pn-pedir-ancho"><label for="pn-pedir-correo">' + escapeHtml(t('pedir-correo')) + '</label>' +
+            '<input id="pn-pedir-correo" name="correo" type="email" maxlength="254" autocomplete="email" required></p>' +
+          '<p class="pn-pedir-campo"><label for="pn-pedir-cual">' + escapeHtml(t('pedir-cual')) + '</label>' +
+            '<select id="pn-pedir-cual" name="feedback">' + opciones + '</select></p>' +
+          '<p class="pn-pedir-campo"><label for="pn-pedir-idioma">' + escapeHtml(t('pedir-idioma')) + '</label>' +
+            '<select id="pn-pedir-idioma" name="l"><option value="es"' + (lang === 'es' ? ' selected' : '') + '>Español</option><option value="en"' + (lang === 'en' ? ' selected' : '') + '>English</option></select></p>' +
+        '</div>' +
+        '<p class="pn-pedir-trampa" aria-hidden="true"><label>Web<input name="web" tabindex="-1" autocomplete="off"></label></p>' +
+        '<details class="pn-pedir-condiciones"><summary>' + escapeHtml(t('pedir-condiciones')) + '</summary>' +
+          '<ol>' + CONDICIONES[lang].map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join("") + '</ol>' +
+          '<p class="pn-pedir-datos">' + escapeHtml(DATOS_PEDIR[lang]) + ' <a href="' + PRIVACIDAD[lang] + '" target="_blank" rel="noopener">' + escapeHtml(t('pedir-privacidad')) + '</a></p>' +
+        '</details>' +
+        '<label class="pn-pedir-acepto"><input type="checkbox" name="acepto"><span>' + escapeHtml(t('pedir-acepto')) + '</span></label>' +
+        '<button class="pn-feedback-btn pn-feedback-btn-primary pn-pedir-enviar" type="submit">' + escapeHtml(t('pedir-cta')) + '</button>' +
+      '</form>' +
+    '</section>';
+  }
+
+  function pedirOkHtml(correo) {
+    return '<section class="pn-pedir pn-pedir-ok" id="pn-pedir" aria-live="polite">' +
+      '<span class="pn-pedir-icono" aria-hidden="true">✉️</span>' +
+      '<h4>' + escapeHtml(t('pedir-ok-title')) + '</h4>' +
+      '<p>' + escapeHtml(t('pedir-ok').split('{e}').join(correo)) + '</p>' +
+      '<div class="pn-pedir-acciones"><button type="button" class="pn-feedback-btn" data-pedir-otra="1">' + escapeHtml(t('pedir-otra')) + '</button></div>' +
+    '</section>';
+  }
+
+  // Lo escrito se guarda entre repintados (filtros, cambio de idioma).
+  var pedirBorrador = {};
+  function guardarBorrador(form) {
+    if (!form) return;
+    ["nombre", "telefono", "correo", "feedback", "l"].forEach(function (k) {
+      if (form.elements[k]) pedirBorrador[k] = form.elements[k].value;
+    });
+    pedirBorrador.acepto = form.elements.acepto ? form.elements.acepto.checked : false;
+    pedirBorrador.slug = form.getAttribute("data-slug");
+  }
+
+  function prepararPedir(cont) {
+    var zona = cont.querySelector("#pn-pedir");
+    if (!zona) return;
+    var otra = zona.querySelector("[data-pedir-otra]");
+    if (otra) otra.addEventListener("click", function () { pedirHecho = null; renderFeedbacks(); });
+    var form = zona.querySelector("form");
+    // «Pedir este feedback» en cada tarjeta: lo elige en el formulario y baja.
+    cont.querySelectorAll("[data-pedir-este]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (pedirHecho) { pedirHecho = null; renderFeedbacks(); }
+        var f = document.querySelector("#pn-pedir form");
+        if (!f) return;
+        var sel = f.elements.feedback;
+        if (sel) sel.value = b.getAttribute("data-pedir-este");
+        var z = document.getElementById("pn-pedir");
+        var top = z.getBoundingClientRect().top + (window.pageYOffset || 0);
+        llevarLaVista(top - 16);
+        try { f.elements.nombre.focus({ preventScroll: true }); } catch (e) {}
+      });
+    });
+    if (!form) return;
+    if (pedirBorrador.slug === form.getAttribute("data-slug")) {
+      ["nombre", "telefono", "correo", "feedback", "l"].forEach(function (k) {
+        if (pedirBorrador[k] != null && form.elements[k]) form.elements[k].value = pedirBorrador[k];
+      });
+      if (form.elements.acepto) form.elements.acepto.checked = !!pedirBorrador.acepto;
+    } else {
+      pedirBorrador = {};
+      pedirAbierto = Date.now();
+    }
+    if (!pedirAbierto) pedirAbierto = Date.now();
+    form.addEventListener("input", function () { guardarBorrador(form); });
+    form.addEventListener("change", function () { guardarBorrador(form); });
+    form.addEventListener("submit", function (ev) { ev.preventDefault(); enviarPedir(form); });
+  }
+
+  function mostrarErroresPedir(form, claves) {
+    var ul = form.querySelector(".pn-pedir-errores");
+    ["nombre", "telefono", "correo"].forEach(function (k) {
+      if (form.elements[k]) form.elements[k].setAttribute("aria-invalid", claves.indexOf(k) !== -1 ? "true" : "false");
+    });
+    if (!claves.length) { ul.hidden = true; ul.innerHTML = ""; sendHeight(); return; }
+    ul.innerHTML = claves.map(function (k) { return '<li>' + escapeHtml(t('pedir-err-' + k)) + '</li>'; }).join("");
+    ul.hidden = false;
+    sendHeight();
+  }
+
+  async function enviarPedir(form) {
+    var limpio = function (v, tope) { return String(v || "").replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, tope); };
+    var datos = {
+      slug: form.getAttribute("data-slug"),
+      feedback_id: form.elements.feedback.value || null,
+      nombre: limpio(form.elements.nombre.value, 80),
+      telefono: limpio(form.elements.telefono.value, 24),
+      correo: limpio(form.elements.correo.value, 254).toLowerCase(),
+      idioma: form.elements.l.value === "en" ? "en" : "es",
+      acepto: form.elements.acepto.checked === true,
+      version: CONDICIONES_VERSION,
+      origen: "webador",
+      web: form.elements.web.value,
+      ms: Date.now() - pedirAbierto
+    };
+    var fallos = [];
+    if (!CORREO_VALIDO.test(datos.correo)) fallos.push("correo");
+    if (datos.nombre.length < 2) fallos.push("nombre");
+    if (datos.telefono.replace(/\D/g, "").length < 6) fallos.push("telefono");
+    if (!datos.acepto) fallos.push("acepto");
+    mostrarErroresPedir(form, fallos);
+    if (fallos.length) return;
+
+    var boton = form.querySelector(".pn-pedir-enviar");
+    boton.disabled = true;
+    boton.textContent = t('pedir-enviando');
+    try {
+      var cfg = window.PN_SUPABASE_CONFIG;
+      var r = await fetch(cfg.SUPABASE_URL + "/functions/v1/solicitar-feedbacks", {
+        method: "POST",
+        headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      var j = await r.json().catch(function () { return {}; });
+      if (r.ok && j.ok) {
+        pedirHecho = { slug: datos.slug, correo: datos.correo };
+        pedirBorrador = {};
+        var zona = document.getElementById("pn-pedir");
+        if (zona) {
+          zona.outerHTML = pedirOkHtml(datos.correo);
+          prepararPedir($("#pn-detail-feedbacks-list"));
+        }
+        sendHeight();
+        return;
+      }
+      var clave = j && j.error;
+      mostrarErroresPedir(form, [clave === "limite" || clave === "correo" || clave === "nombre" || clave === "telefono" ? clave : "red"]);
+    } catch (e) {
+      mostrarErroresPedir(form, ["red"]);
+    }
+    boton.disabled = false;
+    boton.textContent = t('pedir-cta');
   }
 
   /**
